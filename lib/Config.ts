@@ -204,7 +204,7 @@ class Config {
    * The constructor sets the default values
    */
   constructor() {
-    this.dataDir = getServiceDataDir('lnstx');
+    this.dataDir = getServiceDataDir('lnstx-client');
 
     const {
       grpc,
