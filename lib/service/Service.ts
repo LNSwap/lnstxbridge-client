@@ -64,6 +64,8 @@ const { bitcoin: { transactions } } = mempoolJS({
 // increase listenerlimit
 require('events').EventEmitter.defaultMaxListeners = 100;
 
+import axios from 'axios';
+
 type LndNodeInfo = {
   nodeKey: string,
   uris: string[],
@@ -90,6 +92,9 @@ class Service {
 
   private serviceInvoiceListener;
 
+  private aggregatorUrl: string;
+  private providerUrl: string;
+
   constructor(
     private logger: Logger,
     config: ConfigType,
@@ -98,6 +103,9 @@ class Service {
   ) {
     this.prepayMinerFee = config.prepayminerfee;
     this.logger.debug(`Prepay miner fee for Reverse Swaps is ${this.prepayMinerFee ? 'enabled' : 'disabled' }`);
+
+    this.aggregatorUrl = config.aggregatorUrl;
+    this.providerUrl = config.providerUrl;
 
     this.pairRepository = new PairRepository();
     this.directSwapRepository = new DirectSwapRepository();
@@ -170,6 +178,8 @@ class Service {
     await this.rateProvider.init(configPairs);
 
     this.startNFTListener();
+
+    this.joinAggregator();
   }
 
   /**
@@ -1753,6 +1763,20 @@ class Service {
     if (input % 1 !== 0) {
       throw Errors.NOT_WHOLE_NUMBER(input);
     }
+  }
+
+  // register to the aggregator as a swap provider
+  private joinAggregator = async () => {
+    const stacksAddress = (await getStacksNetwork()).signerAddress;
+    const currency = this.getCurrency('BTC');
+    const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
+    const dbPairs = await this.pairRepository.getPairs();
+    axios.post(`${this.aggregatorUrl}/registerclient`, {
+      stacksAddress,
+      nodeId,
+      url: this.providerUrl,
+      pairs: dbPairs,
+    });
   }
 
   private startNFTListener = () => {

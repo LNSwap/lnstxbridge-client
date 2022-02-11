@@ -161,6 +161,8 @@ type ConfigType = {
 
   prepayminerfee: boolean;
   swapwitnessaddress: boolean;
+  aggregatorUrl: string;
+  providerUrl: string;
 
   api: ApiConfig;
   grpc: GrpcConfig;
@@ -195,7 +197,7 @@ class Config {
   private readonly config: ConfigType;
   private readonly dataDir = Config.defaultDataDir;
 
-  public static defaultPort = 9002;
+  public static defaultPort = 9003;
   // public static defaultPort = 9003;
 
   /**
@@ -228,6 +230,9 @@ class Config {
       prepayminerfee: false,
       swapwitnessaddress: false,
 
+      aggregatorUrl: 'http://localhost:9002',
+      providerUrl: 'http://localhost:9003',
+      
       api: {
         host: '0.0.0.0',
         port: Config.defaultPort,

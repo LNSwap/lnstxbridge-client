@@ -2,7 +2,6 @@
 
 ### do not use - under heavy development -  
 
-
 This is a light client to interface with [lnstxbridge](https://github.com/pseudozach/lnstxbridge) to facilitate submarine/atomic swaps between Lightning Network/onchain BTC <-> STX/USDA/(Any SIP10 token) on Stacks
 
 * Allows client to register to main lnstxbridge instance in order to signal supported pairs.
@@ -11,13 +10,9 @@ This is a light client to interface with [lnstxbridge](https://github.com/pseudo
 ## install
 * clone the repo, install requirements and compile  
 `git clone https://github.com/pseudozach/lnstxbridge-client.git`  
-`cd lnstxbridge && npm i && npm run compile`  
+`cd lnstxbridge-client && npm i && npm run compile`  
 * start btc & lnd  
 `npm run docker:regtest`
-* start stacks  
-`npm run stacks:mocknet`
-* fund a regtest account and deploy latest Clarity contract under contracts/  
-`npm run stacks:fund && npm run stacks:deploy`
 * copy boltz.conf to ~/.lnstx/boltz.conf and modify as needed  
 * start the app  
 `npm run start`
