@@ -186,48 +186,48 @@ class Boltz {
         return;
       }
 
-      this.logger.verbose(`Starting rescan of chains: ${chainTips.map(chainTip => chainTip.symbol).join(', ')}`);
+      this.logger.verbose(`Disabling rescan of chains: ${chainTips.map(chainTip => chainTip.symbol).join(', ')}`);
 
       const logRescan = (chainTip: ChainTip) => {
         this.logger.debug(`Rescanning ${chainTip.symbol} from height: ${chainTip.height}`);
       };
 
-      const rescanPromises: Promise<void>[] = [];
+      // const rescanPromises: Promise<void>[] = [];
 
-      for (const chainTip of chainTips) {
-        this.logger.verbose("rescanpromise chaintip: " + chainTip.symbol);
-        if (chainTip.symbol === 'ETH') {
-          if (this.walletManager.ethereumManager) {
-            logRescan(chainTip);
-            rescanPromises.push(this.walletManager.ethereumManager.contractEventHandler.rescan(chainTip.height));
-          }
-        } else if (chainTip.symbol === 'RBTC') {
-          if (this.walletManager.rskManager) {
-            logRescan(chainTip);
-            rescanPromises.push(this.walletManager.rskManager.contractEventHandler.rescan(chainTip.height));
-          }
-        } else if (chainTip.symbol === 'STX') {
-          // this.logger.error("TODO boltz 210 stacks symbol "+ this.walletManager.stacksManager)
-          if (this.walletManager.stacksManager) {
-            // this.logger.error("TODO: boltz.212 stacksManager.contractEventHandler.rescan "+ this.walletManager.stacksManager)
-            logRescan(chainTip);
-            // TODO find a way to rescan if there was any contract calls from users starting with chaintip til now
-            // done
-            rescanPromises.push(this.walletManager.stacksManager.contractEventHandler.rescan(chainTip.height));
-          }
-        } else {
-          // if not ETH or RBTC
-          const { chainClient } = this.currencies.get(chainTip.symbol)!;
+      // for (const chainTip of chainTips) {
+      //   this.logger.verbose("rescanpromise chaintip: " + chainTip.symbol);
+      //   if (chainTip.symbol === 'ETH') {
+      //     if (this.walletManager.ethereumManager) {
+      //       logRescan(chainTip);
+      //       rescanPromises.push(this.walletManager.ethereumManager.contractEventHandler.rescan(chainTip.height));
+      //     }
+      //   } else if (chainTip.symbol === 'RBTC') {
+      //     if (this.walletManager.rskManager) {
+      //       logRescan(chainTip);
+      //       rescanPromises.push(this.walletManager.rskManager.contractEventHandler.rescan(chainTip.height));
+      //     }
+      //   } else if (chainTip.symbol === 'STX') {
+      //     // this.logger.error("TODO boltz 210 stacks symbol "+ this.walletManager.stacksManager)
+      //     if (this.walletManager.stacksManager) {
+      //       // this.logger.error("TODO: boltz.212 stacksManager.contractEventHandler.rescan "+ this.walletManager.stacksManager)
+      //       logRescan(chainTip);
+      //       // TODO find a way to rescan if there was any contract calls from users starting with chaintip til now
+      //       // done
+      //       rescanPromises.push(this.walletManager.stacksManager.contractEventHandler.rescan(chainTip.height));
+      //     }
+      //   } else {
+      //     // if not ETH or RBTC
+      //     const { chainClient } = this.currencies.get(chainTip.symbol)!;
 
-          if (chainClient) {
-            logRescan(chainTip);
-            rescanPromises.push(chainClient.rescanChain(chainTip.height));
-          }
-        }
-      }
+      //     if (chainClient) {
+      //       logRescan(chainTip);
+      //       rescanPromises.push(chainClient.rescanChain(chainTip.height));
+      //     }
+      //   }
+      // }
 
-      await Promise.all(rescanPromises);
-      this.logger.verbose('Finished rescanning');
+      // await Promise.all(rescanPromises);
+      // this.logger.verbose('Finished rescanning');
     } catch (error) {
       this.logger.error(`Could not initialize Boltz!! : ${formatError(error)}`);
       console.log(error);

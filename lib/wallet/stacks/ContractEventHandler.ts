@@ -72,9 +72,10 @@ class ContractEventHandler extends EventEmitter {
     // this.etherSwap = etherSwap;
     // this.erc20Swap = erc20Swap;
 
-    this.logger.verbose('Stacks Starting contract event subscriptions');
-    this.subscribeContractEvents(contract);
-    this.subscribeTokenContractEvents(sip10contract);
+    // there's no stacks node for the client
+    this.logger.verbose('Disabling Stacks contract event subscriptions');
+    // this.subscribeContractEvents(contract);
+    // this.subscribeTokenContractEvents(sip10contract);
   }
 
   public rescan = async (startHeight: number): Promise<void> => {
