@@ -18,7 +18,7 @@ import { getChainCurrency, getHexString, splitPairId, stringify } from '../Utils
 // import ERC20WalletProvider from '../wallet/providers/ERC20WalletProvider';
 import StacksManager from 'lib/wallet/stacks/StacksManager';
 import { TxBroadcastResult } from '@stacks/transactions';
-import { getTx, incrementNonce } from '../wallet/stacks/StacksUtils';
+import { getStacksNetwork, getTx, incrementNonce } from '../wallet/stacks/StacksUtils';
 import type { Transaction } from '@stacks/stacks-blockchain-api-types';
 // import { io } from 'socket.io-client';
 // import * as stacks from '@stacks/blockchain-api-client';
@@ -757,9 +757,22 @@ class StacksNursery extends EventEmitter {
     });
   }
 
-  // this doesn't exist on stacks so we do it in stacksmanager checkblockheight
-  // instead of listening to blocks via websocket - aggregator can inform the client if it expired?
+  // instead of listening to blocks via websocket - check blockheight every minute
   private listenBlocks = () => {
+
+    setInterval(async () =>{
+      // const info = await getInfo();
+      // console.log("stacksnursery.766 listenBlocks Checking for Stacks block height: " + info.stacks_tip_height);
+    
+      // trigger checking of expiredswaps on new blocks
+      const currentTip = getStacksNetwork().blockHeight;
+        // check expired swaps
+      await Promise.all([
+        this.checkExpiredSwaps(currentTip),
+        this.checkExpiredReverseSwaps(currentTip),
+      ]);
+    }, 60000);
+
     // listen to anchor blocks and check for expired swaps as suggested at
     // https://github.com/blockstack/stacks-blockchain-api/issues/815#issuecomment-948964765
     // sc.socket.on('block', async (data) => {
@@ -790,7 +803,7 @@ class StacksNursery extends EventEmitter {
       const wallet = this.getStacksWallet(chainCurrency);
 
       if (wallet) {
-        console.log('stacksn.758 throw swap.expired at height ', height, expirableSwap.id);
+        console.log('stacksnursery.758 throw swap.expired at height ', height, expirableSwap.id);
         this.emit('swap.expired', expirableSwap, wallet.symbol === 'STX');
       }
     }
