@@ -294,6 +294,7 @@ class Controller {
 
   public createSwap = async (req: Request, res: Response): Promise<void> => {
     try {
+      console.log('controller.297 ', req.body);
       const { type } = this.validateRequest(req.body, [
         { name: 'type', type: 'string' },
       ]);
