@@ -51,6 +51,7 @@ import {
   getSwapMemo,
   getUnixTime,
   getVersion,
+  mapToObject,
   reverseBuffer,
   splitPairId,
 } from '../Utils';
@@ -143,6 +144,7 @@ class Service {
     // console.log("***service.ts init");
     const dbPairSet = new Set<string>();
     const dbPairs = await this.pairRepository.getPairs();
+    // console.log("service.146 dbPairs ", dbPairs);
 
     dbPairs.forEach((dbPair) => {
       dbPairSet.add(dbPair.id);
@@ -150,7 +152,7 @@ class Service {
 
     const checkCurrency = (symbol: string) => {
       if (!this.currencies.has(symbol)) {
-        // console.log("service.ts line 123");
+        // console.log("service.ts line 123 ", symbol);
         throw Errors.CURRENCY_NOT_FOUND(symbol);
       }
     };
@@ -166,7 +168,7 @@ class Service {
           id,
           ...configPair,
         });
-        this.logger.silly(`Added pair to database: ${id}`);
+        this.logger.verbose(`Added pair to database: ${id}`);
       }
     }
     
@@ -1770,12 +1772,14 @@ class Service {
     const stacksAddress = (await getStacksNetwork()).signerAddress;
     const currency = this.getCurrency('BTC');
     const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
-    const dbPairs = await this.pairRepository.getPairs();
+    // const dbPairs = await this.pairRepository.getPairs();
+    const dbPairs = await this.getPairs();
+    // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
     axios.post(`${this.aggregatorUrl}/registerclient`, {
       stacksAddress,
       nodeId,
       url: this.providerUrl,
-      pairs: dbPairs,
+      pairs: mapToObject(dbPairs.pairs),
     });
   }
 
