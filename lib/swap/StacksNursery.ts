@@ -18,19 +18,19 @@ import { getChainCurrency, getHexString, splitPairId, stringify } from '../Utils
 // import ERC20WalletProvider from '../wallet/providers/ERC20WalletProvider';
 import StacksManager from 'lib/wallet/stacks/StacksManager';
 import { TxBroadcastResult } from '@stacks/transactions';
-import { getStacksNetwork, getTx, incrementNonce } from '../wallet/stacks/StacksUtils';
+import { getTx, incrementNonce } from '../wallet/stacks/StacksUtils';
 import type { Transaction } from '@stacks/stacks-blockchain-api-types';
-import { io } from 'socket.io-client';
-import * as stacks from '@stacks/blockchain-api-client';
+// import { io } from 'socket.io-client';
+// import * as stacks from '@stacks/blockchain-api-client';
 import SIP10WalletProvider from 'lib/wallet/providers/SIP10WalletProvider';
 
-const socket = io(getStacksNetwork().coreApiUrl, {
-  query: {
-    subscriptions: Array.from(new Set(['block', 'microblock'])).join(','),
-  },
-  transports: [ 'websocket' ]
-});
-const sc = new stacks.StacksApiSocketClient(socket);
+// const socket = io(getStacksNetwork().coreApiUrl, {
+//   query: {
+//     subscriptions: Array.from(new Set(['block', 'microblock'])).join(','),
+//   },
+//   transports: [ 'websocket' ]
+// });
+// const sc = new stacks.StacksApiSocketClient(socket);
 
 interface StacksNursery {
   // EtherSwap
@@ -758,16 +758,17 @@ class StacksNursery extends EventEmitter {
   }
 
   // this doesn't exist on stacks so we do it in stacksmanager checkblockheight
+  // instead of listening to blocks via websocket - aggregator can inform the client if it expired?
   private listenBlocks = () => {
     // listen to anchor blocks and check for expired swaps as suggested at
     // https://github.com/blockstack/stacks-blockchain-api/issues/815#issuecomment-948964765
-    sc.socket.on('block', async (data) => {
-      // console.log(`got new block: `, data);
-      await Promise.all([
-        this.checkExpiredSwaps(data.height),
-        this.checkExpiredReverseSwaps(data.height),
-      ]);
-    });
+    // sc.socket.on('block', async (data) => {
+    //   // console.log(`got new block: `, data);
+    //   await Promise.all([
+    //     this.checkExpiredSwaps(data.height),
+    //     this.checkExpiredReverseSwaps(data.height),
+    //   ]);
+    // });
 
     // this.stacksManager.provider.on('block', async (height) => {
     //   // this.logger.error("StacksNursery on block: " + height.toString());
