@@ -7,8 +7,8 @@ import { parseBuffer, getTx, getInfo, getStacksContractTransactions, getStacksNe
 import { ERC20SwapValues, EtherSwapValues } from '../../consts/Types';
 // import { formatERC20SwapValues, formatEtherSwapValues } from './ContractUtils';
 
-import { connectWebSocketClient } from '@stacks/blockchain-api-client';
-import { getHexBuffer, getHexString, stringify } from '../../../lib/Utils';
+// import { connectWebSocketClient } from '@stacks/blockchain-api-client';
+import { getHexBuffer, getHexString } from '../../../lib/Utils';
 import { crypto } from 'bitcoinjs-lib';
 // import ChainTipRepository from 'lib/db/ChainTipRepository';
 
@@ -196,38 +196,38 @@ class ContractEventHandler extends EventEmitter {
     // });
   }
 
-  private subscribeContractEvents = async (contract:string) => {
+  // private subscribeContractEvents = async (contract:string) => {
 
-    const client = await connectWebSocketClient(getStacksNetwork().wsUrl);
-    console.log('stacks contracteventhandler.134 started listening to txns for ', contract, this.contractAddress, getStacksNetwork().wsUrl);
-    // await client.subscribeAddressTransactions(contract, event => {
-    //   console.log("stacks contracteventhandler.142 got event ", stringify(event));
-    // });
+  //   const client = await connectWebSocketClient(getStacksNetwork().wsUrl);
+  //   console.log('stacks contracteventhandler.134 started listening to txns for ', contract, this.contractAddress, getStacksNetwork().wsUrl);
+  //   // await client.subscribeAddressTransactions(contract, event => {
+  //   //   console.log("stacks contracteventhandler.142 got event ", stringify(event));
+  //   // });
 
-    // this.contractAddress -> was working but wrong!
-    await client.subscribeAddressTransactions(contract, event => {
-      //works!!
-      console.log('stacks contracteventhandler.146 got event ', stringify(event));
+  //   // this.contractAddress -> was working but wrong!
+  //   await client.subscribeAddressTransactions(contract, event => {
+  //     //works!!
+  //     console.log('stacks contracteventhandler.146 got event ', stringify(event));
 
-      // failed call
-      // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
-      // "tx_id":"0x83296167bca3fe4e18b236c708c09066c00adabd49c2ef2b27702d1d57c6035e",
-      // "tx_status":"abort_by_response","tx_type":"contract_call"}
+  //     // failed call
+  //     // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
+  //     // "tx_id":"0x83296167bca3fe4e18b236c708c09066c00adabd49c2ef2b27702d1d57c6035e",
+  //     // "tx_status":"abort_by_response","tx_type":"contract_call"}
 
-      // successful lockstx
-      // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
-      // "tx_id":"0x4bfab6d417207532cbbe3b9c5957d2f77b9b02188e90f01b4c6483db7be95f04",
-      // "tx_status":"success","tx_type":"contract_call"}
+  //     // successful lockstx
+  //     // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
+  //     // "tx_id":"0x4bfab6d417207532cbbe3b9c5957d2f77b9b02188e90f01b4c6483db7be95f04",
+  //     // "tx_status":"success","tx_type":"contract_call"}
 
-      // check for events:
-      // http://localhost:3999/extended/v1/contract/STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3/events?offset=0&limit=2
-      // http://localhost:3999/extended/v1/tx/0xfbe0acfbfe7e85b3e35b8a8b5edf3e041393b39f93b8c33aa5b0b005d9c0cdc4 // this is better!
+  //     // check for events:
+  //     // http://localhost:3999/extended/v1/contract/STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3/events?offset=0&limit=2
+  //     // http://localhost:3999/extended/v1/tx/0xfbe0acfbfe7e85b3e35b8a8b5edf3e041393b39f93b8c33aa5b0b005d9c0cdc4 // this is better!
 
-      if(event.tx_status == 'success') {
-        console.log('found a successful Tx on the contract, check it: ', event.tx_id);
-        this.checkTx(event.tx_id);
-      }
-    });
+  //     if(event.tx_status == 'success') {
+  //       console.log('found a successful Tx on the contract, check it: ', event.tx_id);
+  //       this.checkTx(event.tx_id);
+  //     }
+  //   });
 
     // this.etherSwap.on('Lockup', async (
     //   preimageHash: string,
@@ -288,7 +288,7 @@ class ContractEventHandler extends EventEmitter {
     // this.erc20Swap.on('Refund', (preimageHash: string, event: Event) => {
     //   this.emit('erc20.refund', event.transactionHash, parseBuffer(preimageHash));
     // });
-  }
+  // }
 
   private checkTx = async (txid:string) => {
     let lockFound = false;
@@ -386,39 +386,39 @@ class ContractEventHandler extends EventEmitter {
 
   }
 
-  // SIP10 Events
-  private subscribeTokenContractEvents = async (contract:string) => {
+  // // SIP10 Events
+  // private subscribeTokenContractEvents = async (contract:string) => {
 
-    const client = await connectWebSocketClient(getStacksNetwork().wsUrl);
-    console.log('stacks contracteventhandler.382 started listening to sip10 txns for ', contract, this.contractAddress, getStacksNetwork().wsUrl);
-    // await client.subscribeAddressTransactions(contract, event => {
-    //   console.log("stacks contracteventhandler.142 got event ", stringify(event));
-    // });
+  //   const client = await connectWebSocketClient(getStacksNetwork().wsUrl);
+  //   console.log('stacks contracteventhandler.382 started listening to sip10 txns for ', contract, this.contractAddress, getStacksNetwork().wsUrl);
+  //   // await client.subscribeAddressTransactions(contract, event => {
+  //   //   console.log("stacks contracteventhandler.142 got event ", stringify(event));
+  //   // });
 
-    // this.contractAddress -> was working but wrong!
-    await client.subscribeAddressTransactions(contract, event => {
-      //works!!
-      console.log('stacks contracteventhandler.390 got event ', stringify(event));
+  //   // this.contractAddress -> was working but wrong!
+  //   await client.subscribeAddressTransactions(contract, event => {
+  //     //works!!
+  //     console.log('stacks contracteventhandler.390 got event ', stringify(event));
 
-      // failed call
-      // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
-      // "tx_id":"0x83296167bca3fe4e18b236c708c09066c00adabd49c2ef2b27702d1d57c6035e",
-      // "tx_status":"abort_by_response","tx_type":"contract_call"}
+  //     // failed call
+  //     // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
+  //     // "tx_id":"0x83296167bca3fe4e18b236c708c09066c00adabd49c2ef2b27702d1d57c6035e",
+  //     // "tx_status":"abort_by_response","tx_type":"contract_call"}
 
-      // successful lockstx
-      // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
-      // "tx_id":"0x4bfab6d417207532cbbe3b9c5957d2f77b9b02188e90f01b4c6483db7be95f04",
-      // "tx_status":"success","tx_type":"contract_call"}
+  //     // successful lockstx
+  //     // {"address":"STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v2",
+  //     // "tx_id":"0x4bfab6d417207532cbbe3b9c5957d2f77b9b02188e90f01b4c6483db7be95f04",
+  //     // "tx_status":"success","tx_type":"contract_call"}
 
-      // check for events:
-      // http://localhost:3999/extended/v1/contract/STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3/events?offset=0&limit=2
-      // http://localhost:3999/extended/v1/tx/0xfbe0acfbfe7e85b3e35b8a8b5edf3e041393b39f93b8c33aa5b0b005d9c0cdc4 // this is better!
+  //     // check for events:
+  //     // http://localhost:3999/extended/v1/contract/STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3/events?offset=0&limit=2
+  //     // http://localhost:3999/extended/v1/tx/0xfbe0acfbfe7e85b3e35b8a8b5edf3e041393b39f93b8c33aa5b0b005d9c0cdc4 // this is better!
 
-      if(event.tx_status == 'success') {
-        console.log('found a successful Tx on the contract, check it: ', event.tx_id);
-        this.checkTokenTx(event.tx_id);
-      }
-    });
+  //     if(event.tx_status == 'success') {
+  //       console.log('found a successful Tx on the contract, check it: ', event.tx_id);
+  //       this.checkTokenTx(event.tx_id);
+  //     }
+  //   });
 
     // this.etherSwap.on('Lockup', async (
     //   preimageHash: string,
@@ -479,7 +479,7 @@ class ContractEventHandler extends EventEmitter {
     // this.erc20Swap.on('Refund', (preimageHash: string, event: Event) => {
     //   this.emit('erc20.refund', event.transactionHash, parseBuffer(preimageHash));
     // });
-  }
+  // }
 
   private checkTokenTx = async (txid:string) => {
     let lockFound = false;

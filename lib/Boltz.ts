@@ -10,7 +10,7 @@ import { formatError } from './Utils';
 import Service from './service/Service';
 import VersionCheck from './VersionCheck';
 import GrpcServer from './grpc/GrpcServer';
-import ChainTip from './db/models/ChainTip';
+// import ChainTip from './db/models/ChainTip';
 import GrpcService from './grpc/GrpcService';
 import LndClient from './lightning/LndClient';
 import ChainClient from './chain/ChainClient';
@@ -188,9 +188,9 @@ class Boltz {
 
       this.logger.verbose(`Disabling rescan of chains: ${chainTips.map(chainTip => chainTip.symbol).join(', ')}`);
 
-      const logRescan = (chainTip: ChainTip) => {
-        this.logger.debug(`Rescanning ${chainTip.symbol} from height: ${chainTip.height}`);
-      };
+      // const logRescan = (chainTip: ChainTip) => {
+      //   this.logger.debug(`Rescanning ${chainTip.symbol} from height: ${chainTip.height}`);
+      // };
 
       // const rescanPromises: Promise<void>[] = [];
 
