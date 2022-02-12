@@ -163,7 +163,7 @@ export const setStacksNetwork = (network: string, stacksConfig: StacksConfig, de
     wsUrl = 'ws://localhost:3999/extended/v1/ws'
     stacksNetwork = new StacksMocknet()
   } else if (network.includes('testnet')) {
-    // coreApiUrl = 'https://stacks-node-api.testnet.stacks.co';
+    coreApiUrl = 'https://stacks-node-api.testnet.stacks.co';
     // wsUrl = 'wss://stacks-node-api.testnet.stacks.co/extended/v1/ws'
     stacksNetwork = new StacksTestnet()
   } else if (network.includes('regtest')) {
@@ -171,8 +171,13 @@ export const setStacksNetwork = (network: string, stacksConfig: StacksConfig, de
     // stacksNetwork = new StacksRegtest()
     stacksNetwork = new StacksMocknet()
   } else if (network.includes('mainnet')) {
+    coreApiUrl = 'https://stacks-node-api.mainnet.stacks.co';
     stacksNetwork = new StacksMainnet()
+  } else if (network.includes('mocknet')) {
+    coreApiUrl = 'http://localhost:3999';
+    stacksNetwork = new StacksMocknet()
   }
+  console.log('stacksutils.180 setStacksNetwork::: ', network)
 
   stxSwapAddress = stacksConfig.stxSwapAddress;
   privateKey = derivedPrivateKey;

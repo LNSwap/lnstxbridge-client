@@ -99,8 +99,14 @@ class StacksManager {
     
     let chainId = ChainID.Testnet;
     if(this.stacksConfig.providerEndpoint.includes('mainnet')){
+      console.log('stacksmanager.102 chainId mainnet!')
       chainId = ChainID.Mainnet;
+    } else {
+      console.log('stacksmanager.102 chainId mainnet!')
     }
+
+    //init stacksnetwork data
+    setStacksNetwork(this.stacksConfig.providerEndpoint, this.stacksConfig, 'derivedData.privateKey', 'derivedData.address', 0, 0);
 
     // this.stacksNetwork = new StacksMocknet();
     // if(this.stacksConfig.providerEndpoint.includes('testnet')){
