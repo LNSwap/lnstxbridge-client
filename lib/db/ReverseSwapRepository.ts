@@ -25,6 +25,21 @@ class ReverseSwapRepository {
     });
   }
 
+  public getReverseSwapsConfirmed = (height: number): Promise<ReverseSwap[]> => {
+    return ReverseSwap.findAll({
+      where: {
+        status: {
+          [Op.eq]: [
+            SwapUpdateEvent.TransactionConfirmed,
+          ],
+        } as any,
+        timeoutBlockHeight: {
+          [Op.gte]: height,
+        },
+      },
+    });
+  }
+
   public getReverseSwapsExpirable = (height: number): Promise<ReverseSwap[]> => {
     return ReverseSwap.findAll({
       where: {
