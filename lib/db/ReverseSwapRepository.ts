@@ -9,6 +9,21 @@ class ReverseSwapRepository {
     });
   }
 
+  public getReverseSwapsMempool = (height: number): Promise<ReverseSwap[]> => {
+    return ReverseSwap.findAll({
+      where: {
+        status: {
+          [Op.eq]: [
+            SwapUpdateEvent.TransactionMempool,
+          ],
+        } as any,
+        timeoutBlockHeight: {
+          [Op.lte]: height,
+        },
+      },
+    });
+  }
+
   public getReverseSwapsExpirable = (height: number): Promise<ReverseSwap[]> => {
     return ReverseSwap.findAll({
       where: {
