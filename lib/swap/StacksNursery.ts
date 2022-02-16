@@ -23,6 +23,7 @@ import type { Transaction } from '@stacks/stacks-blockchain-api-types';
 // import { io } from 'socket.io-client';
 // import * as stacks from '@stacks/blockchain-api-client';
 import SIP10WalletProvider from 'lib/wallet/providers/SIP10WalletProvider';
+// import axios from 'axios';
 
 // const socket = io(getStacksNetwork().coreApiUrl, {
 //   query: {
@@ -828,9 +829,10 @@ class StacksNursery extends EventEmitter {
     }
   }
 
+  // this actually tracks both mempool + confirmed - websocket replacement
   private checkMempoolReverseSwaps = async (height: number) => {
     const mempoolReverseSwaps = await this.reverseSwapRepository.getReverseSwapsMempool(height);
-    this.logger.verbose("stacksnursery.833 mempoolReverseSwaps height " + height + ", " + mempoolReverseSwaps)
+    this.logger.verbose("stacksnursery.833 mempoolReverseSwaps height " + height + ", " + mempoolReverseSwaps.length)
 
     for (const mempoolReverseSwap of mempoolReverseSwaps) {
       const { base, quote } = splitPairId(mempoolReverseSwap.pair);
@@ -845,6 +847,26 @@ class StacksNursery extends EventEmitter {
       }
     }
   }
+
+  // private checkProviderSwaps = async (height: number) => {
+  //   const mempoolReverseSwaps = await this.reverseSwapRepository.getReverseSwapsMempool(height);
+  //   this.logger.verbose("stacksnursery.833 mempoolReverseSwaps height " + height + ", " + mempoolReverseSwaps.length)
+
+  //   for (const mempoolReverseSwap of mempoolReverseSwaps) {
+  //     const { base, quote } = splitPairId(mempoolReverseSwap.pair);
+  //     const chainCurrency = getChainCurrency(base, quote, mempoolReverseSwap.orderSide, true);
+
+  //     this.logger.verbose('stacksnursery.393 checkmempoolReverseSwaps, ' + height + ', ' + mempoolReverseSwap.id);
+  //     const wallet = this.getStacksWallet(chainCurrency);
+
+  //     if (wallet) {
+  //       // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
+  //       this.stacksManager.contractEventHandler.checkTx(mempoolReverseSwap.transactionId!)
+  //       const response = await axios.get(`${providerUrl}/getlocked`)
+  //       this.
+  //     }
+  //   }
+  // }
 
   /**
    * Returns a wallet in case there is one with the symbol and it is an Stacks one

@@ -1783,16 +1783,26 @@ class Service {
     });
   }
 
-    // register to the aggregator as a swap provider
-    public updateSwapStatus = async (id, message) => {
-      console.log('service.1788 updateSwapStatus ', id, message.status);
-      await axios.post(`${this.aggregatorUrl}/updateswapstatus`, {
-        id,
-        status: message.status,
-        txId: message.transaction?.id,
-        failureReason: message.failureReason,
-      })
-    }
+  // register to the aggregator as a swap provider
+  public updateSwapStatus = async (id, message) => {
+    console.log('service.1788 updateSwapStatus ', id, message.status);
+    await axios.post(`${this.aggregatorUrl}/updateswapstatus`, {
+      id,
+      status: message.status,
+      txId: message.transaction?.id,
+      failureReason: message.failureReason,
+    })
+  }
+
+  // register to the aggregator as a swap provider
+  public getLockedStatus = async (preimageHash, swapContractAddress) => {
+    console.log('service.1799 getLockedStatus ', preimageHash, swapContractAddress);
+    const response = await axios.post(`${this.aggregatorUrl}/getlocked`, {
+      preimageHash,
+      swapContractAddress,
+    })
+    console.log('service.1804 getlocked response.data ', response.data)
+  }
 
   private startNFTListener = () => {
     if(!this.serviceInvoiceListener) {

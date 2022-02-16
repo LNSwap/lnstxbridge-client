@@ -299,7 +299,7 @@ class ContractEventHandler extends EventEmitter {
     const txData = await getTx(txid);
 
     if(!txData.tx_status || txData.tx_status !== 'success' || txData.tx_type !== 'contract_call'){
-      console.log('contracteventhandler.302 checkTx not success ', txData.tx_id);
+      // console.log('contracteventhandler.302 checkTx not success ', txData.tx_id);
       return;
     }    
 

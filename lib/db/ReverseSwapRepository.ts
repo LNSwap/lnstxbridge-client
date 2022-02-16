@@ -15,6 +15,7 @@ class ReverseSwapRepository {
         status: {
           [Op.eq]: [
             SwapUpdateEvent.TransactionMempool,
+            // Op.or SwapUpdateEvent.TransactionConfirmed,
           ],
         } as any,
         timeoutBlockHeight: {
