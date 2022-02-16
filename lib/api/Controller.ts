@@ -26,6 +26,10 @@ class Controller {
   constructor(private logger: Logger, private service: Service) {
     this.service.eventHandler.on('swap.update', (id, message) => {
       this.logger.debug(`Swap ${id} update: ${stringify(message)}`);
+
+      // update status on aggregator
+      this.service.updateSwapStatus(id, message);
+
       this.pendingSwapInfos.set(id, message);
 
       // console.log('controller.30 pendingswapinfo ', id, message);

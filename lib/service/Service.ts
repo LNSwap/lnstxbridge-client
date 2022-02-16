@@ -1783,6 +1783,17 @@ class Service {
     });
   }
 
+    // register to the aggregator as a swap provider
+    public updateSwapStatus = async (id, message) => {
+      console.log('service.1788 updateSwapStatus ', id, message.status);
+      await axios.post(`${this.aggregatorUrl}/updateswapstatus`, {
+        id,
+        status: message.status,
+        txId: message.transaction?.id,
+        failureReason: message.failureReason,
+      })
+    }
+
   private startNFTListener = () => {
     if(!this.serviceInvoiceListener) {
       this.logger.verbose(`s.1675 startNFTListener starting serviceInvoiceListener`);
