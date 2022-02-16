@@ -290,13 +290,19 @@ class ContractEventHandler extends EventEmitter {
     // });
   // }
 
-  private checkTx = async (txid:string) => {
+  public checkTx = async (txid:string) => {
     let lockFound = false;
     let claimFound = false;
     let refundFound = false;
     let txamount = 0;
     let hashvalue = '';
     const txData = await getTx(txid);
+
+    if(!txData.tx_status || txData.tx_status !== 'success' || txData.tx_type !== 'contract_call'){
+      console.log('contracteventhandler.302 checkTx not success ', txData.tx_id);
+      return;
+    }    
+
     txData.events.forEach(element => {
       // console.log("txData element: ", JSON.stringify(element));
         if(element.contract_log && element.contract_log.value.repr.includes('lock')){
