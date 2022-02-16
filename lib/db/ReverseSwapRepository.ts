@@ -18,7 +18,7 @@ class ReverseSwapRepository {
           ],
         } as any,
         timeoutBlockHeight: {
-          [Op.lte]: height,
+          [Op.gte]: height,
         },
       },
     });

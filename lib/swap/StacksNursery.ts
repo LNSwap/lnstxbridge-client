@@ -765,7 +765,7 @@ class StacksNursery extends EventEmitter {
       // console.log("stacksnursery.766 listenBlocks Checking for Stacks block height: " + info.stacks_tip_height);
     
       // trigger checking of expiredswaps on new blocks
-      console.log('stacksnursery.768 listenblocks - checkheight every minute ', new Date().getTime());
+      console.log('stacksnursery.768 listenblocks - checkheight every minute ', new Date());
       const currentTip = getStacksNetwork().blockHeight;
         // check expired swaps
       await Promise.all([
@@ -830,7 +830,7 @@ class StacksNursery extends EventEmitter {
 
   private checkMempoolReverseSwaps = async (height: number) => {
     const mempoolReverseSwaps = await this.reverseSwapRepository.getReverseSwapsMempool(height);
-    // this.logger.verbose("stacksnursery.417 checkExpiredReverseSwaps " + expirableReverseSwaps)
+    this.logger.verbose("stacksnursery.833 mempoolReverseSwaps height " + height + ", " + mempoolReverseSwaps)
 
     for (const mempoolReverseSwap of mempoolReverseSwaps) {
       const { base, quote } = splitPairId(mempoolReverseSwap.pair);
