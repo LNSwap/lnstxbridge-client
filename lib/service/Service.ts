@@ -66,6 +66,7 @@ const { bitcoin: { transactions } } = mempoolJS({
 require('events').EventEmitter.defaultMaxListeners = 100;
 
 import axios from 'axios';
+import { setConfig } from '../../lib/consts/Utils';
 
 type LndNodeInfo = {
   nodeKey: string,
@@ -107,6 +108,8 @@ class Service {
 
     this.aggregatorUrl = config.aggregatorUrl;
     this.providerUrl = config.providerUrl;
+
+    setConfig(config);
 
     this.pairRepository = new PairRepository();
     this.directSwapRepository = new DirectSwapRepository();
