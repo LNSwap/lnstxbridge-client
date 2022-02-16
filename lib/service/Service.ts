@@ -1774,7 +1774,7 @@ class Service {
     const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
     // const dbPairs = await this.pairRepository.getPairs();
     const dbPairs = await this.getPairs();
-    // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
+    console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
     axios.post(`${this.aggregatorUrl}/registerclient`, {
       stacksAddress,
       nodeId,

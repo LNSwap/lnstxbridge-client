@@ -102,7 +102,7 @@ class StacksManager {
       console.log('stacksmanager.102 chainId mainnet!')
       chainId = ChainID.Mainnet;
     } else {
-      console.log('stacksmanager.102 chainId mainnet!')
+      console.log('stacksmanager.102 chainId testnet!')
     }
 
     //init stacksnetwork data
