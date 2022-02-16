@@ -23,7 +23,9 @@ import type { Transaction } from '@stacks/stacks-blockchain-api-types';
 // import { io } from 'socket.io-client';
 // import * as stacks from '@stacks/blockchain-api-client';
 import SIP10WalletProvider from 'lib/wallet/providers/SIP10WalletProvider';
-// import axios from 'axios';
+import { ConfigType } from '../Config'
+import { getConfig } from '../../lib/consts/Utils';
+import axios from 'axios';
 
 // const socket = io(getStacksNetwork().coreApiUrl, {
 //   query: {
@@ -89,6 +91,7 @@ interface StacksNursery {
 
 class StacksNursery extends EventEmitter {
   private stacksManager: StacksManager;
+  private config: ConfigType;
 
   constructor(
     private logger: Logger,
@@ -107,6 +110,9 @@ class StacksNursery extends EventEmitter {
     this.logger.verbose('StacksNursery listeners are starting...');
     this.listenEtherSwap();
     this.listenERC20Swap();
+
+    this.config = getConfig();
+    this.logger.verbose('StacksNursery.115 getConfig '+ this.config);
   }
 
   public init = async (): Promise<void> => {
@@ -773,6 +779,7 @@ class StacksNursery extends EventEmitter {
         this.checkExpiredSwaps(currentTip),
         this.checkExpiredReverseSwaps(currentTip),
         this.checkMempoolReverseSwaps(currentTip),
+        this.checkProviderSwaps(currentTip),
       ]);
     }, 60000);
 
@@ -848,25 +855,28 @@ class StacksNursery extends EventEmitter {
     }
   }
 
-  // private checkProviderSwaps = async (height: number) => {
-  //   const mempoolReverseSwaps = await this.reverseSwapRepository.getReverseSwapsMempool(height);
-  //   this.logger.verbose("stacksnursery.833 mempoolReverseSwaps height " + height + ", " + mempoolReverseSwaps.length)
+  private checkProviderSwaps = async (height: number) => {
+    const confirmedReverseSwaps = await this.reverseSwapRepository.getReverseSwapsConfirmed(height);
+    this.logger.verbose("stacksnursery.859 checkProviderSwaps height " + height + ", " + confirmedReverseSwaps.length)
 
-  //   for (const mempoolReverseSwap of mempoolReverseSwaps) {
-  //     const { base, quote } = splitPairId(mempoolReverseSwap.pair);
-  //     const chainCurrency = getChainCurrency(base, quote, mempoolReverseSwap.orderSide, true);
+    for (const confirmedReverseSwap of confirmedReverseSwaps) {
+      const { base, quote } = splitPairId(confirmedReverseSwap.pair);
+      const chainCurrency = getChainCurrency(base, quote, confirmedReverseSwap.orderSide, true);
 
-  //     this.logger.verbose('stacksnursery.393 checkmempoolReverseSwaps, ' + height + ', ' + mempoolReverseSwap.id);
-  //     const wallet = this.getStacksWallet(chainCurrency);
+      this.logger.verbose('stacksnursery.865 checkProviderSwaps, ' + height + ', ' + confirmedReverseSwap.id);
+      const wallet = this.getStacksWallet(chainCurrency);
 
-  //     if (wallet) {
-  //       // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
-  //       this.stacksManager.contractEventHandler.checkTx(mempoolReverseSwap.transactionId!)
-  //       const response = await axios.get(`${providerUrl}/getlocked`)
-  //       this.
-  //     }
-  //   }
-  // }
+      if (wallet) {
+        // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
+        this.stacksManager.contractEventHandler.checkTx(confirmedReverseSwap.transactionId!)
+        const response = await axios.post(`${this.config.providerUrl}/getlocked`, {
+          preimageHash: confirmedReverseSwap.preimageHash,
+          swapContractAddress: confirmedReverseSwap.lockupAddress,
+        })
+        console.log('stacksnursery.875 checkProviderSwaps ', response.data);
+      }
+    }
+  }
 
   /**
    * Returns a wallet in case there is one with the symbol and it is an Stacks one
