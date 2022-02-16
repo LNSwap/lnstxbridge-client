@@ -765,11 +765,13 @@ class StacksNursery extends EventEmitter {
       // console.log("stacksnursery.766 listenBlocks Checking for Stacks block height: " + info.stacks_tip_height);
     
       // trigger checking of expiredswaps on new blocks
+      console.log('stacksnursery.768 listenblocks - checkheight every minute ', new Date().getTime());
       const currentTip = getStacksNetwork().blockHeight;
         // check expired swaps
       await Promise.all([
         this.checkExpiredSwaps(currentTip),
         this.checkExpiredReverseSwaps(currentTip),
+        this.checkMempoolReverseSwaps(currentTip),
       ]);
     }, 60000);
 
@@ -822,6 +824,24 @@ class StacksNursery extends EventEmitter {
 
       if (wallet) {
         this.emit('reverseSwap.expired', expirableReverseSwap, wallet.symbol === 'STX');
+      }
+    }
+  }
+
+  private checkMempoolReverseSwaps = async (height: number) => {
+    const mempoolReverseSwaps = await this.reverseSwapRepository.getReverseSwapsMempool(height);
+    // this.logger.verbose("stacksnursery.417 checkExpiredReverseSwaps " + expirableReverseSwaps)
+
+    for (const mempoolReverseSwap of mempoolReverseSwaps) {
+      const { base, quote } = splitPairId(mempoolReverseSwap.pair);
+      const chainCurrency = getChainCurrency(base, quote, mempoolReverseSwap.orderSide, true);
+
+      this.logger.verbose('stacksnursery.393 checkmempoolReverseSwaps, ' + height + ', ' + mempoolReverseSwap.id);
+      const wallet = this.getStacksWallet(chainCurrency);
+
+      if (wallet) {
+        // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
+        this.stacksManager.contractEventHandler.checkTx(mempoolReverseSwap.transactionId!)
       }
     }
   }

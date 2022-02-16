@@ -298,7 +298,7 @@ class StacksManager {
 
 async function checkblockheight (chainTipRepository, chainTip) {
   const info = await getInfo();
-  console.log("Checking for Stacks block height: " + info.stacks_tip_height);
+  console.log("stacksmanager.301 checking for Stacks block height: " + info.stacks_tip_height);
   chainTipRepository.updateTip(chainTip, info.stacks_tip_height);
 
   // trigger checking of expiredswaps on new blocks
