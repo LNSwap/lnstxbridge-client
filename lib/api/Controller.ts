@@ -144,6 +144,7 @@ class Controller {
   }
 
   public getPairs = (_: Request, res: Response): void => {
+    console.log('controller.297 getPairs ');
     const data = this.service.getPairs();
 
     this.successResponse(res, {
@@ -294,7 +295,7 @@ class Controller {
 
   public createSwap = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log('controller.297 ', req.body);
+      // console.log('controller.299 ', req.body);
       const { type } = this.validateRequest(req.body, [
         { name: 'type', type: 'string' },
       ]);
