@@ -855,6 +855,7 @@ class StacksNursery extends EventEmitter {
     }
   }
 
+  // check any claims on the tx from aggregator
   private checkProviderSwaps = async (height: number) => {
     const confirmedReverseSwaps = await this.reverseSwapRepository.getReverseSwapsConfirmed(height);
     this.logger.verbose("stacksnursery.859 checkProviderSwaps height " + height + ", " + confirmedReverseSwaps.length)
@@ -868,12 +869,20 @@ class StacksNursery extends EventEmitter {
 
       if (wallet) {
         // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
-        this.stacksManager.contractEventHandler.checkTx(confirmedReverseSwap.transactionId!)
-        const response = await axios.post(`${this.config.providerUrl}/getlocked`, {
+        console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
           preimageHash: confirmedReverseSwap.preimageHash,
           swapContractAddress: confirmedReverseSwap.lockupAddress,
-        })
+        });
+
+        const response = await axios.post(`${this.config.aggregatorUrl}/getlocked`, {
+          preimageHash: confirmedReverseSwap.preimageHash,
+          swapContractAddress: confirmedReverseSwap.lockupAddress,
+        });
         console.log('stacksnursery.875 checkProviderSwaps ', response.data);
+        if(response.data.txData && response.data.txData.txId) {
+          // got claim - mark it
+          this.stacksManager.contractEventHandler.checkTx(response.data.txData.txId);
+        }
       }
     }
   }

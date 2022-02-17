@@ -1797,15 +1797,15 @@ class Service {
     })
   }
 
-  // register to the aggregator as a swap provider
-  public getLockedStatus = async (preimageHash, swapContractAddress) => {
-    console.log('service.1799 getLockedStatus ', preimageHash, swapContractAddress);
-    const response = await axios.post(`${this.aggregatorUrl}/getlocked`, {
-      preimageHash,
-      swapContractAddress,
-    })
-    console.log('service.1804 getlocked response.data ', response.data)
-  }
+  // // allow client to check status of a swap
+  // public getLockedStatus = async (preimageHash, swapContractAddress) => {
+  //   console.log('service.1799 getLockedStatus ', preimageHash, swapContractAddress);
+  //   const response = await axios.post(`${this.aggregatorUrl}/getlocked`, {
+  //     preimageHash,
+  //     swapContractAddress,
+  //   })
+  //   console.log('service.1804 getlocked response.data ', response.data)
+  // }
 
   private startNFTListener = () => {
     if(!this.serviceInvoiceListener) {
