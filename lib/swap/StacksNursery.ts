@@ -781,7 +781,7 @@ class StacksNursery extends EventEmitter {
         this.checkMempoolReverseSwaps(currentTip),
         this.checkProviderSwaps(currentTip),
       ]);
-    }, 60000);
+    }, 30000);
 
     // listen to anchor blocks and check for expired swaps as suggested at
     // https://github.com/blockstack/stacks-blockchain-api/issues/815#issuecomment-948964765
@@ -899,33 +899,25 @@ class StacksNursery extends EventEmitter {
     this.logger.verbose("stacksnursery.899 checkProviderSwaps pendingSwaps height " + height + ", " + pendingSwaps.length)
 
     for (const pendingSwap of pendingSwaps) {
-      const { base, quote } = splitPairId(pendingSwap.pair);
-      const chainCurrency = getChainCurrency(base, quote, pendingSwap.orderSide, true);
-      console.log('sn.904 base, quote, chainCurrency: ', base, quote, chainCurrency);
       this.logger.verbose('stacksnursery.905 pendingSwap, ' + height + ', ' + pendingSwap.id);
-      // const wallet = this.getStacksWallet(chainCurrency);
-      // const { sendingCurrency, receivingCurrency } = this.getCurrencies(base, quote, swap.orderSide);
 
-      // sendingCurrency.lndClient!.decodePayReq()
+      if (pendingSwap.preimageHash) {
+        // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
+        console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
+          preimageHash: pendingSwap.preimageHash,
+          swapContractAddress: pendingSwap.lockupAddress,
+        });
 
-      // if (wallet) {
-      //   // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
-      //   console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
-      //     preimageHash: pendingSwap.preimageHash,
-      //     swapContractAddress: pendingSwap.lockupAddress,
-      //   });
-
-      //   const preimageHash = 
-      //   const response = await axios.post(`${this.config.aggregatorUrl}/getlocked`, {
-      //     preimageHash: confirmedReverseSwap.preimageHash,
-      //     swapContractAddress: confirmedReverseSwap.lockupAddress,
-      //   });
-      //   console.log('stacksnursery.875 checkProviderSwaps ', response.data);
-      //   if(response.data.txData && response.data.txData.txId) {
-      //     // got claim - mark it
-      //     this.stacksManager.contractEventHandler.checkTx(response.data.txData.txId);
-      //   }
-      // }
+        const response = await axios.post(`${this.config.aggregatorUrl}/getlocked`, {
+          preimageHash: pendingSwap.preimageHash,
+          swapContractAddress: pendingSwap.lockupAddress,
+        });
+        console.log('stacksnursery.915 ', response.data);
+        if(response.data.txData && response.data.txData.txId) {
+          // got claim - mark it
+          this.stacksManager.contractEventHandler.checkTx(response.data.txData.txId);
+        }
+      }
     }
 
   }
