@@ -1772,18 +1772,28 @@ class Service {
 
   // register to the aggregator as a swap provider
   private joinAggregator = async () => {
-    const stacksAddress = (await getStacksNetwork()).signerAddress;
-    const currency = this.getCurrency('BTC');
-    const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
-    // const dbPairs = await this.pairRepository.getPairs();
-    const dbPairs = await this.getPairs();
-    console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
-    axios.post(`${this.aggregatorUrl}/registerclient`, {
-      stacksAddress,
-      nodeId,
-      url: this.providerUrl,
-      pairs: mapToObject(dbPairs.pairs),
-    });
+    // try to join aggregator every 10 seconds until successful
+    const interval = setInterval(async () => {
+      try {
+        const stacksAddress = getStacksNetwork().signerAddress;
+        const currency = this.getCurrency('BTC');
+        const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
+        // const dbPairs = await this.pairRepository.getPairs();
+        const dbPairs = this.getPairs();
+        console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
+        const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
+          stacksAddress,
+          nodeId,
+          url: this.providerUrl,
+          pairs: mapToObject(dbPairs.pairs),
+        });
+        console.log('service.1795 joinAggregator response: ', response.data);
+        if(response.data.result) clearInterval(interval);
+      } catch (error) {
+        console.log('service.1781 joinAggregator error: ', )
+      }
+    }, 10000);
+
   }
 
   // register to the aggregator as a swap provider
