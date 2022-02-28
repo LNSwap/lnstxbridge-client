@@ -868,7 +868,7 @@ export const sponsorTx = async (tx:string, minerfee:number) => {
   return txId;
 }
 
-function unHex(input) {
+export function unHex(input) {
   if(input.slice(0,2) === '0x') {
     return input.slice(2)
   } else {

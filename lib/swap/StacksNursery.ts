@@ -26,6 +26,7 @@ import SIP10WalletProvider from 'lib/wallet/providers/SIP10WalletProvider';
 import { ConfigType } from '../Config'
 import { getConfig } from '../../lib/consts/Utils';
 import axios from 'axios';
+// import { unHex } from '../wallet/stacks/StacksUtils';
 
 // const socket = io(getStacksNetwork().coreApiUrl, {
 //   query: {
@@ -879,9 +880,11 @@ class StacksNursery extends EventEmitter {
           swapContractAddress: confirmedReverseSwap.lockupAddress,
         });
         console.log('stacksnursery.875 checkProviderSwaps ', response.data);
-        if(response.data.txData && response.data.txData.txId) {
+        // response will be an array now - find claim
+        const txData = response.data.txData.find((item) => item.event === 'claim');
+        if(txData && txData.txId) {
           // got claim - mark it
-          this.stacksManager.contractEventHandler.checkTx(response.data.txData.txId);
+          this.stacksManager.contractEventHandler.checkTx(txData.txId);
         }
       }
     }
@@ -913,9 +916,11 @@ class StacksNursery extends EventEmitter {
           swapContractAddress: pendingSwap.lockupAddress,
         });
         console.log('stacksnursery.915 ', response.data);
-        if(response.data.txData && response.data.txData.txId) {
-          // got claim - mark it
-          this.stacksManager.contractEventHandler.checkTx(response.data.txData.txId);
+        // response will be an array now - find lock?
+        const txData = response.data.txData.find((item) => item.event === 'lock');
+        if(txData && txData.txId) {
+          // got lock? - mark it
+          this.stacksManager.contractEventHandler.checkTx(txData.txId);
         }
       }
     }
