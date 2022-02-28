@@ -885,6 +885,49 @@ class StacksNursery extends EventEmitter {
         }
       }
     }
+
+    const pendingSwaps = await this.swapRepository.getSwaps({
+      status: {
+        [Op.not]: [
+          SwapUpdateEvent.SwapExpired,
+          SwapUpdateEvent.InvoicePending,
+          SwapUpdateEvent.InvoiceFailedToPay,
+          SwapUpdateEvent.TransactionClaimed,
+        ],
+      } as any,
+    });
+    this.logger.verbose("stacksnursery.899 checkProviderSwaps pendingSwaps height " + height + ", " + pendingSwaps.length)
+
+    for (const pendingSwap of pendingSwaps) {
+      const { base, quote } = splitPairId(pendingSwap.pair);
+      const chainCurrency = getChainCurrency(base, quote, pendingSwap.orderSide, true);
+      console.log('sn.904 base, quote, chainCurrency: ', base, quote, chainCurrency);
+      this.logger.verbose('stacksnursery.905 pendingSwap, ' + height + ', ' + pendingSwap.id);
+      // const wallet = this.getStacksWallet(chainCurrency);
+      // const { sendingCurrency, receivingCurrency } = this.getCurrencies(base, quote, swap.orderSide);
+
+      // sendingCurrency.lndClient!.decodePayReq()
+
+      // if (wallet) {
+      //   // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
+      //   console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
+      //     preimageHash: pendingSwap.preimageHash,
+      //     swapContractAddress: pendingSwap.lockupAddress,
+      //   });
+
+      //   const preimageHash = 
+      //   const response = await axios.post(`${this.config.aggregatorUrl}/getlocked`, {
+      //     preimageHash: confirmedReverseSwap.preimageHash,
+      //     swapContractAddress: confirmedReverseSwap.lockupAddress,
+      //   });
+      //   console.log('stacksnursery.875 checkProviderSwaps ', response.data);
+      //   if(response.data.txData && response.data.txData.txId) {
+      //     // got claim - mark it
+      //     this.stacksManager.contractEventHandler.checkTx(response.data.txData.txId);
+      //   }
+      // }
+    }
+
   }
 
   /**
