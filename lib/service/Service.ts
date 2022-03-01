@@ -836,6 +836,7 @@ class Service {
         'onchain swap',
         // getSwapMemo(quote, false),
       ) || '';
+      // console.log('service.839 bip21: ', bip21);
 
       acceptZeroConf = this.rateProvider.acceptZeroConf(base, expectedAmount);
       const swap = await this.swapManager.swapRepository.getSwap({
@@ -1798,12 +1799,17 @@ class Service {
 
   // register to the aggregator as a swap provider
   public updateSwapStatus = async (id, message) => {
-    console.log('service.1788 updateSwapStatus ', id, message.status);
+    console.log('service.1788 updateSwapStatus ', id, message);
     await axios.post(`${this.aggregatorUrl}/updateswapstatus`, {
       id,
       status: message.status,
       txId: message.transaction?.id,
       failureReason: message.failureReason,
+      txHex: message.transaction?.hex,
+      transaction: {
+        id: message.transaction?.id,
+        hex: message.transaction?.hex,
+      }
     })
   }
 

@@ -118,7 +118,7 @@ class EventHandler extends EventEmitter {
               status: SwapUpdateEvent.ASTransactionConfirmed,
               transaction: {
                 id: transaction.toString(),
-                // hex: transaction.toHex(),
+                // hex: transaction.toHex(), // do not put dummyhex - this is used in frontend to detectswap and build claimtx
               },
             });
           } else {
