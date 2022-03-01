@@ -1879,7 +1879,7 @@ class SwapNursery extends EventEmitter {
 
     if (queriedSwap!.status === SwapUpdateEvent.SwapExpired || queriedSwap!.status === SwapUpdateEvent.TransactionRefunded ) {
       // refunded added to avoid 2 x refundutxoAS
-      this.logger.verbose('swapnursery expireSwap returning without refunding '+ swap.id);
+      // this.logger.verbose('swapnursery expireSwap returning without refunding '+ swap.id);
       return;
     }
 

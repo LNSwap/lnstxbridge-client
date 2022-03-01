@@ -335,7 +335,7 @@ class ContractEventHandler extends EventEmitter {
       console.log('contracteventhandler.328 no txData.contract_call.function_args - returning');
       return;
     }
-    console.log('contracteventhandler.259 txData.contract_call.function_args: ', txData.contract_call.function_args);
+    // console.log('contracteventhandler.259 txData.contract_call.function_args: ', txData.contract_call.function_args);
     if(lockFound){
       // get data from contract call
       const preimageHash = txData.contract_call.function_args.filter(a=>a.name=='preimageHash')[0].repr;

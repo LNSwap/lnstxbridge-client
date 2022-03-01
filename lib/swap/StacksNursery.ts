@@ -865,21 +865,21 @@ class StacksNursery extends EventEmitter {
       const { base, quote } = splitPairId(confirmedReverseSwap.pair);
       const chainCurrency = getChainCurrency(base, quote, confirmedReverseSwap.orderSide, true);
 
-      this.logger.verbose('stacksnursery.865 checkProviderSwaps, ' + height + ', ' + confirmedReverseSwap.id);
+      // this.logger.verbose('stacksnursery.865 checkProviderSwaps, ' + height + ', ' + confirmedReverseSwap.id);
       const wallet = this.getStacksWallet(chainCurrency);
 
       if (wallet) {
         // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
-        console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
-          preimageHash: confirmedReverseSwap.preimageHash,
-          swapContractAddress: confirmedReverseSwap.lockupAddress,
-        });
+        // console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
+        //   preimageHash: confirmedReverseSwap.preimageHash,
+        //   swapContractAddress: confirmedReverseSwap.lockupAddress,
+        // });
 
         const response = await axios.post(`${this.config.aggregatorUrl}/getlocked`, {
           preimageHash: confirmedReverseSwap.preimageHash,
           swapContractAddress: confirmedReverseSwap.lockupAddress,
         });
-        console.log('stacksnursery.875 checkProviderSwaps ', response.data);
+        console.log('stacksnursery.875 checkProviderSwaps ', confirmedReverseSwap.id, response.data);
         // response will be an array now - find claim
         const txData = response.data.txData.find((item) => item.event === 'claim');
         if(txData && txData.txId) {
@@ -895,7 +895,9 @@ class StacksNursery extends EventEmitter {
           SwapUpdateEvent.SwapExpired,
           SwapUpdateEvent.InvoicePending,
           SwapUpdateEvent.InvoiceFailedToPay,
-          SwapUpdateEvent.TransactionClaimed,
+          SwapUpdateEvent.InvoiceSettled,
+          // SwapUpdateEvent.TransactionClaimed,
+          // SwapUpdateEvent.ASTransactionConfirmed,
         ],
       } as any,
     });
@@ -906,20 +908,26 @@ class StacksNursery extends EventEmitter {
 
       if (pendingSwap.preimageHash) {
         // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
-        console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
-          preimageHash: pendingSwap.preimageHash,
-          swapContractAddress: pendingSwap.lockupAddress,
-        });
+        // console.log('stacksnursery.872 checkProviderSwaps ', `${this.config.aggregatorUrl}/getlocked`, {
+        //   preimageHash: pendingSwap.preimageHash,
+        //   swapContractAddress: pendingSwap.lockupAddress,
+        // });
 
         const response = await axios.post(`${this.config.aggregatorUrl}/getlocked`, {
           preimageHash: pendingSwap.preimageHash,
           swapContractAddress: pendingSwap.lockupAddress,
         });
-        console.log('stacksnursery.915 ', response.data);
-        // response will be an array now - find lock?
-        const txData = response.data.txData.find((item) => item.event === 'lock');
+        console.log('stacksnursery.915 ', pendingSwap.id, response.data);
+        // response will be an array now - find lock? 
+        let txData = response.data.txData.find((item) => item.event === 'lock');
         if(txData && txData.txId) {
-          // got lock? - mark it
+          // got lock - mark it
+          this.stacksManager.contractEventHandler.checkTx(txData.txId);
+        }
+        // and claim for atomic swaps!
+        txData = response.data.txData.find((item) => item.event === 'claim');
+        if(txData && txData.txId) {
+          // got claim - mark it
           this.stacksManager.contractEventHandler.checkTx(txData.txId);
         }
       }
