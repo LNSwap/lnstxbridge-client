@@ -769,7 +769,7 @@ class SwapNursery extends EventEmitter {
 
     // Swap events
     stacksNursery.on('swap.expired', async (swap) => {
-      this.logger.error('stacksNursery swap.expired ');
+      // this.logger.error('stacksNursery swap.expired ');
       await this.lock.acquire(SwapNursery.swapLock, async () => {
         await this.expireSwap(swap);
       });

@@ -896,7 +896,8 @@ class StacksNursery extends EventEmitter {
           SwapUpdateEvent.InvoicePending,
           SwapUpdateEvent.InvoiceFailedToPay,
           SwapUpdateEvent.InvoiceSettled,
-          // SwapUpdateEvent.TransactionClaimed,
+          SwapUpdateEvent.TransactionRefunded,
+          SwapUpdateEvent.TransactionClaimed, // not needed?
           // SwapUpdateEvent.ASTransactionConfirmed,
         ],
       } as any,
