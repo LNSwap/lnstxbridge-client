@@ -273,7 +273,7 @@ class StacksNursery extends EventEmitter {
       });
 
       if (!swap) {
-        this.logger.error('StacksNursery.137 swap not found! ' + transactionHash);
+        // this.logger.verbose('StacksNursery.137 swap not found! ' + transactionHash);
 
         // check if this is our own lockup that user needs to claim from GUI so just set tx to confirmed and exit
         const reverseSwap = await this.reverseSwapRepository.getReverseSwap({
@@ -287,7 +287,7 @@ class StacksNursery extends EventEmitter {
           },
         });
 
-        this.logger.error('StacksNursery.276 checking reverseswap ' + transactionHash);
+        // this.logger.verbose('StacksNursery.276 checking reverseswap ' + transactionHash);
         if(reverseSwap){
           this.logger.error('StacksNursery.209 reverseswap self lockup found ' + reverseSwap.transactionId!);
           try {
@@ -351,7 +351,7 @@ class StacksNursery extends EventEmitter {
           }
         }
 
-        this.logger.error('StacksNursery.276 checking if atomicswap ' + transactionHash);
+        // this.logger.verbose('StacksNursery.276 checking if atomicswap ' + transactionHash);
         // this.logger.error("StacksNursery.276 checking swap 1" + stringify(etherSwapValues));
 
         // onchain atomic swap
@@ -490,7 +490,7 @@ class StacksNursery extends EventEmitter {
       });
 
       if (!reverseSwap) {
-        this.logger.error('stacksnursery.239 reverseswap not found');
+        // this.logger.verbose('stacksnursery.239 reverseswap not found');
 
         // this could be an atomic swap claim that user claimed on STX and we should claim the corresponding utxo.
         const swap = await this.swapRepository.getSwap({
