@@ -1773,7 +1773,8 @@ class Service {
 
   // register to the aggregator as a swap provider
   private joinAggregator = async () => {
-    // try to join aggregator every 10 seconds until successful
+    // try to join aggregator every 60 seconds until successful
+    // continue joining to update the rates/fees
     const interval = setInterval(async () => {
       try {
         const stacksAddress = getStacksNetwork().signerAddress;
@@ -1781,7 +1782,7 @@ class Service {
         const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
         // const dbPairs = await this.pairRepository.getPairs();
         const dbPairs = this.getPairs();
-        console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
+        // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
           stacksAddress,
           nodeId,
@@ -1791,9 +1792,9 @@ class Service {
         console.log('service.1795 joinAggregator response: ', response.data);
         if(response.data.result) clearInterval(interval);
       } catch (error) {
-        console.log('service.1781 joinAggregator error: ', )
+        console.log('service.1781 joinAggregator error: ', error.message);
       }
-    }, 10000);
+    }, 60000);
 
   }
 
