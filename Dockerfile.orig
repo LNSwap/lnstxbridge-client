@@ -1,6 +1,4 @@
-# FROM ubuntu:20.04
-# FROM arm64v8/ubuntu:20.04
-FROM arm64v8/node
+FROM ubuntu:20.04
 
 RUN apt-get update
 RUN apt-get -y install curl gnupg git rsync build-essential
@@ -17,5 +15,5 @@ COPY . ./
 RUN npm install
 RUN npm run compile
 
-EXPOSE 9003
+EXPOSE 9002
 CMD [ "npm", "run", "start" ]
