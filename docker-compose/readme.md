@@ -1,20 +1,14 @@
 # Introduction
-Instructions for running lnstxbridge through docker-compose. 
+Instructions for running lnstxbridge-client through docker-compose. 
 The docker-compose consist of the following services:
-- lnstxbridge backend API (running on port 9002)
-- lnstxbridge frontend (running on port 3000)
+- lnstxbridge-client backend API (running on port 9003)
 
 You can build your own images, or use images built by us (default latest version in docker-compose)
 
 # Docker build
 ```
-git clone https://github.com/pseudozach/lnstxbridge
-cd lnstxbridge
-docker buildx build --platform linux/amd64 -t your_tag_name .
-
-
-git clone https://github.com/pseudozach/lnstxbridge-frontend
-cd lnstxbridge-frontend
+git clone https://github.com/pseudozach/lnstxbridge-client
+cd lnstxbridge-client
 docker buildx build --platform linux/amd64 -t your_tag_name .
 ```
 # Configuration
@@ -33,8 +27,8 @@ Open and edit the `boltz.conf` with your values
 - cookie
 - rpcuser
 - rpcpass
-### Stacks
-- stacks node endpoint, if you cannot host your own node, you can get in touch with us for API access.
+### Aggregator URL
+- lnstxbridge aggregator instance that your client will register to be a part of the swap provider network.
 #### Onchain data
 We need to provide information about smart contracts that service will be interacting with
 ##### Swap contracts
@@ -46,5 +40,4 @@ Currently alongside STX and Lightning we support swapping of USDA tokens. We nee
 - contractAddress
 
 # lnstxbridge frontend
-Open and edit `frontend/.env` with your values
-Contracts you deployed in step above for the backend will also be needed in here
+As a swap provider client, you shouldn't need to provide a frontend but you will register to an aggregator and aggregator frontend will serve your information and route swaps to you.
