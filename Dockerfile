@@ -1,9 +1,7 @@
-# FROM ubuntu:20.04
-# FROM arm64v8/ubuntu:20.04
-FROM arm64v8/node
+FROM ubuntu:20.04
 
 RUN apt-get update
-RUN apt-get -y install curl gnupg git rsync build-essential
+RUN apt-get -y install curl gnupg git rsync build-essential python
 RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
 RUN apt-get -y install nodejs
 
@@ -14,6 +12,7 @@ WORKDIR /usr/src/app
 # where available (npm@5+)
 # COPY package-docker.json ./package.json
 COPY . ./
+COPY docker-compose/prebuilt/* ./node_modules/grpc-tools/bin/
 RUN npm install
 RUN npm run compile
 
