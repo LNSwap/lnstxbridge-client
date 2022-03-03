@@ -9,7 +9,8 @@ You can build your own images, or use images built by us (default latest version
 ```
 git clone https://github.com/pseudozach/lnstxbridge-client
 cd lnstxbridge-client
-docker buildx build --platform linux/amd64 -t your_tag_name .
+docker buildx create --use
+docker buildx build --platform linux/arm64,linux/amd64 -t lnstxbridge-client .
 ```
 # Configuration
 
@@ -35,9 +36,13 @@ We need to provide information about smart contracts that service will be intera
 These contracts should be deployed for every deployment of this service and should not be shared with other deployments
 - stxswap contract address - latest version under /contracts folder
 - sip10swap contract address - latest version under /contracts folder
-##### USDA token contract address
+##### USDA token contract address (optional)
 Currently alongside STX and Lightning we support swapping of USDA tokens. We need to provide deployment of the USDA token of the chain we are deploying to:
 - contractAddress
 
+# run your lnstxbridge-client as a liquidity provider
+cd docker-compose
+docker-compose up -d
+
 # lnstxbridge frontend
-As a swap provider client, you shouldn't need to provide a frontend but you will register to an aggregator and aggregator frontend will serve your information and route swaps to you.
+As a swap provider client, you shouldn't need to provide a frontend but you will register to an aggregator and aggregator frontend will serve your information to end users and route swaps to you.
