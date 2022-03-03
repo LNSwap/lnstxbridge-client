@@ -121,7 +121,6 @@
     "eslint-plugin-node": "^11.1.0",
     "ethereum-waffle": "^3.3.0",
     "get-port": "^5.1.1",
-    "grpc-tools": "^1.11.1",
     "grpc_tools_node_protoc_ts": "^5.2.2",
     "hardhat": "^2.3.0",
     "hardhat-gas-reporter": "^1.0.4",
