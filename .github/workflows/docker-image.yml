@@ -38,5 +38,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            pseudozach/lnstxbridge:latest
-            pseudozach/lnstxbridge:${{ steps.date.outputs.date }}
+            pseudozach/lnstxbridge-client:latest
+            pseudozach/lnstxbridge-client:${{ steps.date.outputs.date }}
