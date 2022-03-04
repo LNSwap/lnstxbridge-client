@@ -197,8 +197,7 @@ class Config {
   private readonly config: ConfigType;
   private readonly dataDir = Config.defaultDataDir;
 
-  public static defaultPort = 9003;
-  // public static defaultPort = 9003;
+  public static defaultPort = 9008;
 
   /**
    * The constructor sets the default values
@@ -231,7 +230,7 @@ class Config {
       swapwitnessaddress: false,
 
       aggregatorUrl: 'http://localhost:9002',
-      providerUrl: 'http://localhost:9003',
+      providerUrl: 'http://localhost:9008',
       
       api: {
         host: '0.0.0.0',
