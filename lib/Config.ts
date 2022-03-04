@@ -439,6 +439,15 @@ class Config {
     }
 
     deepMerge(this.config, args);
+
+    // update config from environment variables - highest priority 
+    if(process.env.BITCOIN_IP) this.config.currencies[0].chain.host = process.env.BITCOIN_IP
+    if(process.env.BITCOIN_PORT) this.config.currencies[0].chain.port = Number(process.env.BITCOIN_PORT)
+    if(process.env.BITCOIN_RPC_USER) this.config.currencies[0].chain.user = process.env.BITCOIN_RPC_USER
+    if(process.env.BITCOIN_RPC_PASS) this.config.currencies[0].chain.password = process.env.BITCOIN_RPC_PASS
+    if(process.env.LND_IP) this.config.currencies[0].lnd!.host = process.env.LND_IP
+    if(process.env.LND_GRPC_PORT) this.config.currencies[0].lnd!.port = Number(process.env.LND_GRPC_PORT)
+    
     return this.config;
   }
 
