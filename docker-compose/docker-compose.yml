@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  lnstxbridge_client:
+  api:
     container_name: lnstxbridge-client
     image: pseudozach/lnstxbridge-client:latest
     restart: on-failure
@@ -16,6 +16,14 @@ services:
       BITCOIN_RPC_USER: $BITCOIN_RPC_USER
       BITCOIN_RPC_PASS: $BITCOIN_RPC_PASS
       LND_IP: $LND_IP 
-      LND_GRPC_PORT: LND_GRPC_PORT
-
-    
+      LND_GRPC_PORT: $LND_GRPC_PORT
+      AGGREGATOR_URL: $APP_HIDDEN_SERVICE
+  dashboard:
+    container_name: lnstxbridge-dashboard
+    image: pseudozach/lnstxbridge-dashboard:latest
+    restart: on-failure
+    stop_grace_period: 1m
+    ports:
+      - "9009:3000"
+    environment:
+      PROVIDER_URL: $APP_HIDDEN_SERVICE
