@@ -1,9 +1,17 @@
 version: "3.9"
 services:
   lnstxbridge_client:
+    container_name: lnstxbridge-client
     image: pseudozach/lnstxbridge-client:latest
+    restart: on-failure
+    stop_grace_period: 1m
     ports:
       - "9003:9003"
     volumes:
       - ./lnstx-client/:/root/.lnstx-client/
+    environment:
+      BITCOIND_HOST: $BITCOIN_IP
+      BITCOIND_PORT: $BITCOIN_RPC_PORT
+      BITCOIND_USER: $BITCOIN_RPC_USER
+      BITCOIND_PASS: $BITCOIN_RPC_PASS
     
