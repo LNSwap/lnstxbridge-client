@@ -40,6 +40,12 @@ These contracts should be deployed for every deployment of this service and shou
 Currently alongside STX and Lightning we support swapping of USDA tokens. We need to provide deployment of the USDA token of the chain we are deploying to:
 - contractAddress
 
+# install docker-compose if missing
+VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | jq .name -r)
+DESTINATION=/usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+sudo chmod 755 $DESTINATION
+
 # run your lnstxbridge-client as a liquidity provider
 cd docker-compose
 docker-compose up -d
