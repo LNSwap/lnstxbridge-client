@@ -8,7 +8,7 @@ services:
     ports:
       - "9008:9008"
     volumes:
-      - ./lnstx-client/:/root/.lnstx-client/
+      - ${APP_DATA_DIR}/data:/root/.lnstx-client/
       - ${LND_DATA_DIR}:/lnd:ro
     environment:
       BITCOIN_IP: $BITCOIN_IP
