@@ -9,9 +9,13 @@ services:
       - "9008:9008"
     volumes:
       - ./lnstx-client/:/root/.lnstx-client/
+      - ${LND_DATA_DIR}:/lnd:ro
     environment:
-      BITCOIND_HOST: $BITCOIN_IP
-      BITCOIND_PORT: $BITCOIN_RPC_PORT
-      BITCOIND_USER: $BITCOIN_RPC_USER
-      BITCOIND_PASS: $BITCOIN_RPC_PASS
+      BITCOIN_IP: $BITCOIN_IP
+      BITCOIN_RPC_PORT: $BITCOIN_RPC_PORT
+      BITCOIN_RPC_USER: $BITCOIN_RPC_USER
+      BITCOIN_RPC_PASS: $BITCOIN_RPC_PASS
+      LND_IP: $LND_IP 
+      LND_GRPC_PORT: LND_GRPC_PORT
+
     
