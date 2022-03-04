@@ -79,3 +79,7 @@ lib/Version.ts
 
 # Bitcoin and Litecoin Core RPC cookies
 docker/regtest/data/core/cookies/
+
+otp*
+boltz.db
+seed.dat
