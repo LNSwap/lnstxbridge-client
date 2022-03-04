@@ -235,8 +235,8 @@ class Config {
       api: {
         host: '0.0.0.0',
         port: Config.defaultPort,
-        sslKey: '/etc/letsencrypt/live/api.lnswap.org/privkey.pem',
-        sslCert: '/etc/letsencrypt/live/api.lnswap.org/fullchain.pem',
+        sslKey: '/root/certs/privkey.pem',
+        sslCert: '/root/certs/fullchain.pem',
         sslEnabled: false,
       },
 
