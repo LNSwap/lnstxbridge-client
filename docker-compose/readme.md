@@ -23,9 +23,17 @@ Open and edit the `docker-compose/lnstx-client/boltz.conf` with your values
 - lnd endpoint
 - macaroonpath 
 - certpath
+> lnstxbridge-client should have access to lnd tls.cert and admin.macaroon
+```
+cp ~/.lnd/tls.cert docker-compose/lnstx-client/lnd-tls.cert
+cp ~/.lnd/data/chain/bitcoin/mainnet/admin.macaroon docker-compose/lnstx-client/admin.macaroon  
+```
 ### BTC
 - bitcoin node endpoint
 - cookie
+> lnstxbridge-client should have access to bitcoin .cookie file  
+`cp ~/.bitcoin/.cookie docker-compose/lnstx-client/.cookie`  
+* Both Bitcoin and Lightning Nodes need to be listening on 0.0.0.0 otherwise bridge app can not connect to their ports.
 ### Aggregator URL
 - lnstxbridge aggregator instance that your client will register to be a part of the swap provider network.
 ### Onchain data
