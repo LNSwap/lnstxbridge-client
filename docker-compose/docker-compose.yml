@@ -17,6 +17,7 @@ services:
       BITCOIN_RPC_PASS: $BITCOIN_RPC_PASS
       LND_IP: $LND_IP 
       LND_GRPC_PORT: $LND_GRPC_PORT
+      APP_FOLDER: "/root/.lnstx-client/"
   dashboard:
     container_name: lnstxbridge-dashboard
     image: pseudozach/lnstxbridge-dashboard:latest
