@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:buster-slim
 
 RUN apt-get update
 RUN apt-get -y install curl gnupg git rsync build-essential python
@@ -7,14 +7,10 @@ RUN apt-get -y install nodejs
 
 WORKDIR /usr/src/app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-# COPY package-docker.json ./package.json
 COPY . ./
 COPY docker-compose/prebuilt/* ./node_modules/grpc-tools/bin/
 RUN npm install
 RUN npm run compile
 
-EXPOSE 9003
+EXPOSE 9008
 CMD [ "npm", "run", "start" ]

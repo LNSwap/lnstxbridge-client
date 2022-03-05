@@ -83,3 +83,6 @@ docker/regtest/data/core/cookies/
 otp*
 boltz.db
 seed.dat
+.cookie
+admin.macaroon
+lnd-tls.cert
