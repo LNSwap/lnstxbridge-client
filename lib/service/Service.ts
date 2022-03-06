@@ -7,7 +7,7 @@ import Logger from '../Logger';
 import Swap from '../db/models/Swap';
 import ApiErrors from '../api/Errors';
 import Wallet from '../wallet/Wallet';
-import { ConfigType } from '../Config';
+import { ConfigType, DashboardConfig } from '../Config';
 import EventHandler from './EventHandler';
 import { PairConfig } from '../consts/Types';
 import PairRepository from '../db/PairRepository';
@@ -56,6 +56,8 @@ import {
   splitPairId,
 } from '../Utils';
 
+import Balancer from './Balancer';
+
 import mempoolJS from "@mempool/mempool.js";
 import ReverseSwap from 'lib/db/models/ReverseSwap';
 const { bitcoin: { transactions } } = mempoolJS({
@@ -96,6 +98,9 @@ class Service {
 
   private aggregatorUrl: string;
   private providerUrl: string;
+
+  private balancer: Balancer;
+  private dashboardConfig: DashboardConfig;
 
   constructor(
     private logger: Logger,
@@ -141,6 +146,9 @@ class Service {
       this.currencies,
       this.swapManager.nursery,
     );
+
+    this.balancer = new Balancer(this, logger, config.balancer);
+    this.dashboardConfig = config.dashboard;
   }
 
   public init = async (configPairs: PairConfig[]): Promise<void> => {
@@ -1888,6 +1896,84 @@ class Service {
     }
   }
 
+  // admin dashboard
+  public getAdminSwaps = async (): Promise<Swap[]> => {
+    const swaps: Swap[] = await this.swapManager.swapRepository.getSwaps();
+    // console.log('service.1826 getAdminSwaps swaps ', swaps);
+    return swaps;
+  }
+
+  public getAdminReverseSwaps = async (): Promise<ReverseSwap[]> => {
+    const swaps: ReverseSwap[] = await this.swapManager.reverseSwapRepository.getReverseSwaps();
+    return swaps;
+  }
+
+  public getAdminBalancerConfig = async (): Promise<{minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean}> => {
+    return this.balancer.getBalancerConfig();
+  }
+
+  public getAdminDashboardAuth = (): string => {
+    const auth = 'Basic ' + Buffer.from(this.dashboardConfig.username + ':' + this.dashboardConfig.password).toString('base64');
+    // this.logger.verbose(`service.1853 getAdminDashboardAuth ${auth}`);
+    return auth;
+  }
+
+  public getAdminBalancerBalances = async (): Promise<string> => {
+    try {
+      const result = await this.balancer.getExchangeAllBalances();
+      return result;
+    } catch (error) {
+      this.logger.error(`service.2128 getAdminBalancerBalances error: ${error.message}`);
+      return `Unable to get exchange balances`;
+    }
+  }
+
+  /**
+   * pairId: X/Y => sell X, buy Y
+   * buyAmount: amount of target currency to buy from exchange
+   */
+  public getAdminBalancer = async (pairId: string, buyAmount: number): Promise<{ status: string, result: string }> => {
+    try {
+      const params = {pairId, buyAmount};
+      const result = await this.balancer.balanceFunds(params);
+      return result;
+    } catch (error) {
+      this.logger.error(`service.1851 getAdminBalancer error: ${error.message}`);
+      return {status: 'Error', result: `Balance failed error: ${error.message}`};
+    }
+  }
+
+  public getAdminBalanceOffchain = async (): Promise<string> => {
+    const balances = (await this.getBalance()).getBalancesMap();
+    let balanceLN = '';
+    balances.forEach((balance: Balance) => {
+      const lightningBalance = balance.getLightningBalance();
+      if (lightningBalance) {
+        balanceLN = `${lightningBalance.getLocalBalance()}`;
+      }
+    });
+    return balanceLN;
+  }
+
+  public getAdminBalanceOnchain = async (): Promise<string> => {
+    const balances = (await this.getBalance()).getBalancesMap();
+    let balanceOnchain = ''
+    balances.forEach((balance: Balance, symbol: string) => {
+      if(symbol === 'BTC')
+      balanceOnchain = `${balance.getWalletBalance()!.getTotalBalance()}`;
+    });
+    return balanceOnchain;
+  }
+
+  public getAdminBalanceStacks = async (): Promise<{walletName: string, value: string, address: string}[]> => {
+    const data = await getAddressAllBalances();
+    const signerAddress = (await getStacksNetwork()).signerAddress;
+    let respArray: {walletName: string, value: string, address: string}[] = []
+    Object.keys(data).forEach((key) => {
+      respArray.push({walletName: key, value: data[key], address: signerAddress});
+    })
+    return respArray;
+  }
 
 }
 

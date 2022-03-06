@@ -7,7 +7,7 @@ import SwapNursery from '../swap/SwapNursery';
 // import ServiceErrors from '../service/Errors';
 import { SwapUpdate } from '../service/EventHandler';
 import { SwapType, SwapUpdateEvent } from '../consts/Enums';
-import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify } from '../Utils';
+import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify, parseTomlConfig } from '../Utils';
 
 type ApiArgument = {
   name: string,
@@ -597,6 +597,104 @@ class Controller {
       throw `invalid preimage hash length: ${preimageHash.length}`;
     }
   }
+
+  public getAdminSwaps = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    // console.log('getAdminSwaps authHeader ', authHeader, tempAuthorizationHeader);
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminSwaps();
+    // console.log('controller.597 getAdminSwaps data ', data);
+    this.successResponse(res, data);
+  }
+
+  public getAdminReverseSwaps = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminReverseSwaps();
+    this.successResponse(res, data);
+  }
+
+  public getAdminBalancerStatus = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminBalancerConfig();
+    this.successResponse(res, data);
+  }
+
+  public getAdminBalancer = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const { pairId, buyAmount } = this.validateRequest(req.body, [
+      { name: 'pairId', type: 'string' },
+      { name: 'buyAmount', type: 'number' },
+    ]);
+    const data = await this.service.getAdminBalancer(pairId, buyAmount);
+    this.successResponse(res, data);
+  }
+
+  public getAdminBalancerBalances = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminBalancerBalances();
+    this.successResponse(res, data);
+  }
+
+  public getAdminBalanceOffchain = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminBalanceOffchain();
+    this.successResponse(res, data);
+  }
+
+  public getAdminBalanceOnchain = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminBalanceOnchain();
+    this.successResponse(res, data);
+  }
+
+  public getAdminBalanceStacks = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = await this.service.getAdminBalanceStacks();
+    this.successResponse(res, data);
+  }
+  
+  public getAdminConfiguration = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const data = parseTomlConfig(process.env.APP_FOLDER + '/boltz.conf')
+    console.log('controller.803 parseTomlConfig: ', data);
+    this.successResponse(res, data);
+  }
+
 }
 
 export default Controller;

@@ -305,7 +305,7 @@ class Config {
         username: 'admin',
         password: 'admin',
       },
-      
+
       pairs: [
         {
           base: 'LTC',
@@ -567,6 +567,8 @@ export {
   StacksConfig,
   CurrencyConfig,
   NotificationConfig,
+  BalancerConfig,
+  DashboardConfig,
   EthProviderServiceConfig,
   RskProviderServiceConfig,
 };
