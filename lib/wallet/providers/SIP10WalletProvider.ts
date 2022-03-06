@@ -67,18 +67,28 @@ class SIP10WalletProvider implements WalletProviderInterface {
       senderAddress,
     };
 
-    const sip10balance = await callReadOnlyFunction(options);
-    this.logger.silly('sip10balance '+ cvToJSON(sip10balance));
-    const balance = this.normalizeTokenAmount(
-      cvToJSON(sip10balance).value.value
-      // await this.token.contract.balanceOf(await this.getAddress()),
-    );
-    this.logger.silly('sip10balance normalized '+ balance);
-    return {
-      totalBalance: balance,
-      confirmedBalance: balance,
-      unconfirmedBalance: 0,
-    };
+    try {
+      const sip10balance = await callReadOnlyFunction(options);
+      this.logger.silly('sip10balance '+ cvToJSON(sip10balance));
+      const balance = this.normalizeTokenAmount(
+        cvToJSON(sip10balance).value.value
+        // await this.token.contract.balanceOf(await this.getAddress()),
+      );
+      this.logger.verbose('sip10balance normalized '+ balance);
+      return {
+        totalBalance: balance,
+        confirmedBalance: balance,
+        unconfirmedBalance: 0,
+      };
+    } catch (error) {
+      this.logger.error('sip10balance error '+ error.message);
+      return {
+        totalBalance: 0,
+        confirmedBalance: 0,
+        unconfirmedBalance: 0,
+      };
+    }
+
   }
 
   public sendToAddress = async (address: string, amount: number, gasPrice?: number): Promise<SentTransaction> => {
