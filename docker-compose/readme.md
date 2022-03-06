@@ -1,7 +1,7 @@
 # Introduction
 Follow these instructions for running lnstxbridge-client through docker-compose. 
 The docker-compose consist of the following service:
-- lnstxbridge-client backend API (running on port 9003)
+- lnstxbridge-client backend API (running on port 9008)
 
 You can build your own images, or use images built by lnswap.org (default latest version in docker-compose)
 
