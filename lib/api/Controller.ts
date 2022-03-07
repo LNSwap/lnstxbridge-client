@@ -7,7 +7,7 @@ import SwapNursery from '../swap/SwapNursery';
 // import ServiceErrors from '../service/Errors';
 import { SwapUpdate } from '../service/EventHandler';
 import { SwapType, SwapUpdateEvent } from '../consts/Enums';
-import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify, parseTomlConfig } from '../Utils';
+import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify, parseTomlConfig, saveTomlConfig } from '../Utils';
 
 type ApiArgument = {
   name: string,
@@ -691,8 +691,34 @@ class Controller {
       return;
     }
     const data = parseTomlConfig(process.env.APP_FOLDER + '/boltz.conf')
-    console.log('controller.803 parseTomlConfig: ', data);
+    // console.log('controller.803 parseTomlConfig: ', data);
     this.successResponse(res, data);
+  }
+
+  public saveAdminConfiguration = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    console.log('controller.704 saveAdminConfiguration ', req.body);
+    const { config } = this.validateRequest(req.body, [
+      { name: 'config', type: 'object' },
+    ]);
+    const data = saveTomlConfig(config)
+    console.log('controller.705 saveTomlConfig: ', data);
+    this.successResponse(res, data);
+  }
+
+  public getAdminRestartApp = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    
+    console.log('controller.719 restarting the app...');
+    this.successResponse(res, "OK");
   }
 
 }
