@@ -716,8 +716,17 @@ class Controller {
       this.errorResponse(req, res, 'unauthorized');
       return;
     }
-    
-    console.log('controller.719 restarting the app...');
+    setTimeout(function () {
+        process.on("exit", function () {
+            require("child_process").spawn(process.argv.shift(), process.argv, {
+                cwd: process.cwd(),
+                detached : true,
+                stdio: "inherit"
+            });
+        });
+        console.log('controller.729 restarting the app...');
+        process.exit();
+    }, 5000);
     this.successResponse(res, "OK");
   }
 
