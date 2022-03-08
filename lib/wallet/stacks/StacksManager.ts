@@ -191,7 +191,8 @@ class StacksManager {
 
     // I don't see any way to subscribe to Stacks blocks
     // Using setinterval instead every minute :)
-    setInterval(function(){
+    setInterval(() =>{
+      this.logger.verbose("stacksmanager.301 checking for Stacks block height chain tip: " + chainTip + ", current block:" + currentBlock);
       checkblockheight(chainTipRepository, chainTip);
     }, 60000);
 
@@ -298,7 +299,7 @@ class StacksManager {
 
 async function checkblockheight (chainTipRepository, chainTip) {
   const info = await getInfo();
-  console.log("stacksmanager.301 checking for Stacks block height: " + info.stacks_tip_height);
+  // console.log("stacksmanager.301 checking for Stacks block height: " + info.stacks_tip_height);
   chainTipRepository.updateTip(chainTip, info.stacks_tip_height);
 
   // trigger checking of expiredswaps on new blocks

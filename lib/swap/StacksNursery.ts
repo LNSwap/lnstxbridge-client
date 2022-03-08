@@ -773,7 +773,7 @@ class StacksNursery extends EventEmitter {
       // console.log("stacksnursery.766 listenBlocks Checking for Stacks block height: " + info.stacks_tip_height);
     
       // trigger checking of expiredswaps on new blocks
-      console.log('stacksnursery.768 listenblocks - checkheight every minute ', new Date());
+      // this.logger.verbose('stacksnursery.768 listenblocks - checkheight every minute');
       const currentTip = getStacksNetwork().blockHeight;
         // check expired swaps
       await Promise.all([
@@ -859,7 +859,7 @@ class StacksNursery extends EventEmitter {
   // check any claims on the tx from aggregator
   private checkProviderSwaps = async (height: number) => {
     const confirmedReverseSwaps = await this.reverseSwapRepository.getReverseSwapsConfirmed(height);
-    this.logger.verbose("stacksnursery.859 checkProviderSwaps height " + height + ", " + confirmedReverseSwaps.length)
+    // this.logger.verbose("stacksnursery.859 checkProviderSwaps height " + height + ", " + confirmedReverseSwaps.length)
 
     for (const confirmedReverseSwap of confirmedReverseSwaps) {
       const { base, quote } = splitPairId(confirmedReverseSwap.pair);
@@ -902,7 +902,7 @@ class StacksNursery extends EventEmitter {
         ],
       } as any,
     });
-    this.logger.verbose("stacksnursery.899 checkProviderSwaps pendingSwaps height " + height + ", " + pendingSwaps.length)
+    // this.logger.verbose("stacksnursery.899 checkProviderSwaps pendingSwaps height " + height + ", " + pendingSwaps.length)
 
     for (const pendingSwap of pendingSwaps) {
       this.logger.verbose('stacksnursery.905 pendingSwap, ' + height + ', ' + pendingSwap.id);
