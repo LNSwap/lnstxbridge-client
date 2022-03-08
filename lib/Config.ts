@@ -483,7 +483,8 @@ class Config {
     if(process.env.BITCOIN_RPC_PASS) this.config.currencies[0].chain.password = process.env.BITCOIN_RPC_PASS
     if(process.env.LND_IP) this.config.currencies[0].lnd!.host = process.env.LND_IP
     if(process.env.LND_GRPC_PORT) this.config.currencies[0].lnd!.port = Number(process.env.LND_GRPC_PORT)
-    
+    console.log('config.486 merged data from env variables and set final config: ', this.config);
+
     return this.config;
   }
 
