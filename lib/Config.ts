@@ -476,14 +476,16 @@ class Config {
 
     deepMerge(this.config, args);
 
-    // update config from environment variables - highest priority 
+    // update config from environment variables - highest priority - i.e. umbrel docker-compose.yml
     if(process.env.BITCOIN_IP) this.config.currencies[0].chain.host = process.env.BITCOIN_IP
-    if(process.env.BITCOIN_PORT) this.config.currencies[0].chain.port = Number(process.env.BITCOIN_PORT)
+    if(process.env.BITCOIN_RPC_PORT) this.config.currencies[0].chain.port = Number(process.env.BITCOIN_RPC_PORT)
     if(process.env.BITCOIN_RPC_USER) this.config.currencies[0].chain.user = process.env.BITCOIN_RPC_USER
     if(process.env.BITCOIN_RPC_PASS) this.config.currencies[0].chain.password = process.env.BITCOIN_RPC_PASS
     if(process.env.LND_IP) this.config.currencies[0].lnd!.host = process.env.LND_IP
     if(process.env.LND_GRPC_PORT) this.config.currencies[0].lnd!.port = Number(process.env.LND_GRPC_PORT)
-    console.log('config.486 merged data from env variables and set final config: ', this.config);
+    if(process.env.BITCOIN_NETWORK) this.config.currencies[0].lnd!.macaroonpath = path.join(getServiceDataDir('lnd'), 'data', 'chain', 'bitcoin', process.env.BITCOIN_NETWORK, 'admin.macaroon')
+    if(process.env.APP_PASSWORD) this.config.dashboard.password = process.env.APP_PASSWORD
+    console.log('config.486 merged data from env variables and set final config: ', JSON.stringify(this.config));
 
     return this.config;
   }
