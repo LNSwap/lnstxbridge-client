@@ -15,9 +15,11 @@ services:
       BITCOIN_RPC_PORT: $BITCOIN_RPC_PORT
       BITCOIN_RPC_USER: $BITCOIN_RPC_USER
       BITCOIN_RPC_PASS: $BITCOIN_RPC_PASS
+      BITCOIN_NETWORK: $BITCOIN_NETWORK
       LND_IP: $LND_IP 
       LND_GRPC_PORT: $LND_GRPC_PORT
       APP_FOLDER: "/root/.lnstx-client/"
+      APP_PASSWORD: $APP_PASSWORD
   dashboard:
     container_name: lnstxbridge-dashboard
     image: pseudozach/lnstxbridge-dashboard:latest
@@ -26,4 +28,4 @@ services:
     ports:
       - "9009:3000"
     environment:
-      NEXT_PUBLIC_BACKEND_URL: "$APP_LNSTXBRIDGE_IP:9008"
+      NEXT_PUBLIC_BACKEND_URL: "$APP_LNSWAP_API_IP:9008"
