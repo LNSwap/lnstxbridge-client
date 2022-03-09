@@ -199,13 +199,13 @@ class Service {
    * Gets general information about this Boltz instance and the nodes it is connected to
    */
   public getInfo = async (): Promise<GetInfoResponse> => {
-    this.logger.error('service.160 STARTED');
+    // this.logger.error('service.160 STARTED');
     const response = new GetInfoResponse();
     const map = response.getChainsMap();
 
     response.setVersion(getVersion());
 
-    this.logger.error('service.165 - ' + JSON.stringify(this.currencies));
+    // this.logger.error('service.165 - ' + JSON.stringify(this.currencies));
     for (const [symbol, currency] of this.currencies) {
       const chain = new ChainInfo();
       const lnd = new LndInfo();
@@ -232,11 +232,12 @@ class Service {
         } catch (error) {
           chain.setError(formatError(error));
         }
-      } else if (currency.stacksClient) {
-        this.logger.error('service.ts 192 TODO');
-        const blockNumber = await getInfo();
-        this.logger.error('blockNumber: ' + blockNumber);
       }
+      //  else if (currency.stacksClient) {
+      //   // this.logger.error('service.ts 192 TODO');
+      //   const blockNumber = await getInfo();
+      //   this.logger.verbose('blockNumber: ' + blockNumber);
+      // }
 
       if (currency.lndClient) {
         try {
