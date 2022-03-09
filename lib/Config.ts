@@ -199,7 +199,7 @@ type ConfigType = {
 
 class Config {
   // Default paths
-  public static defaultDataDir = getServiceDataDir('lnstx');
+  public static defaultDataDir = getServiceDataDir('lnstx-client');
 
   public static defaultConfigPath = 'boltz.conf';
   public static defaultMnemonicPath = 'seed.dat';

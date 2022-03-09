@@ -8,6 +8,8 @@ import SwapNursery from '../swap/SwapNursery';
 import { SwapUpdate } from '../service/EventHandler';
 import { SwapType, SwapUpdateEvent } from '../consts/Enums';
 import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify, parseTomlConfig, saveTomlConfig } from '../Utils';
+import Config from '../Config';
+import path from 'path';
 
 type ApiArgument = {
   name: string,
@@ -690,7 +692,8 @@ class Controller {
       this.errorResponse(req, res, 'unauthorized');
       return;
     }
-    const data = parseTomlConfig(process.env.APP_FOLDER + '/boltz.conf')
+    // console.log('controller.694: ', Config.defaultDataDir, Config.defaultConfigPath, path.join(Config.defaultDataDir, Config.defaultConfigPath));
+    const data = parseTomlConfig(path.join(Config.defaultDataDir, Config.defaultConfigPath))
     // console.log('controller.803 parseTomlConfig: ', data);
     this.successResponse(res, data);
   }
