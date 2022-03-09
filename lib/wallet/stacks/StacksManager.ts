@@ -192,7 +192,7 @@ class StacksManager {
     // I don't see any way to subscribe to Stacks blocks
     // Using setinterval instead every minute :)
     setInterval(() =>{
-      this.logger.verbose("stacksmanager.301 checking for Stacks block height chain tip: " + chainTip + ", current block:" + currentBlock);
+      this.logger.verbose("stacksmanager.301 checking for Stacks block height chain tip: " + chainTip.height + ", current block:" + currentBlock);
       checkblockheight(chainTipRepository, chainTip);
     }, 60000);
 
