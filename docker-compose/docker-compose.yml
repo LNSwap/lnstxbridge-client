@@ -8,8 +8,8 @@ services:
     ports:
       - "9008:9008"
     volumes:
-      - ${APP_DATA_DIR}/data:/root/.lnstx-client/
-      - ${LND_DATA_DIR}:/lnd:ro
+      - "$APP_DATA_DIR/data:/root/.lnstx-client/"
+      - "$LND_DATA_DIR:/lnd:ro"
     environment:
       BITCOIN_IP: $BITCOIN_IP
       BITCOIN_RPC_PORT: $BITCOIN_RPC_PORT
@@ -19,6 +19,7 @@ services:
       LND_IP: $LND_IP 
       LND_GRPC_PORT: $LND_GRPC_PORT
       APP_PASSWORD: $APP_PASSWORD
+      APP_HIDDEN_SERVICE: $APP_HIDDEN_SERVICE
   dashboard:
     container_name: lnstxbridge-dashboard
     image: pseudozach/lnstxbridge-dashboard:latest
