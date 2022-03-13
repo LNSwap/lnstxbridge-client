@@ -157,4 +157,4 @@ cd $APP_DATA_DIR/data
 curl -O "https://cdn.jsdelivr.net/gh/pseudozach/lnstxbridge-client@main/docker-compose/lnstx-client/boltz.conf"
 
 # start containers
-# docker-compose up -d
+docker-compose up -d
