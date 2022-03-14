@@ -405,16 +405,16 @@ class ZmqClient extends EventEmitter {
       // this needs to be connecting to the address where bitcoind is running
       // which in docker env is different than zmqnotifications
       let zmqaddress = address;
-      if (filter === filters.rawTx && process.env.BITCOIN_IP && process.env.BITCOIN_ZMQ_RAWTX_PORT) {
+      if (filter === 'rawtx' && process.env.BITCOIN_IP && process.env.BITCOIN_ZMQ_RAWTX_PORT) {
         zmqaddress = `tcp://${process.env.BITCOIN_IP}:${process.env.BITCOIN_ZMQ_RAWTX_PORT}`;
       }
-      if (filter === filters.rawBlock && process.env.BITCOIN_IP && process.env.BITCOIN_ZMQ_RAWBLOCK_PORT) {
+      if (filter === 'rawblock' && process.env.BITCOIN_IP && process.env.BITCOIN_ZMQ_RAWBLOCK_PORT) {
         zmqaddress = `tcp://${process.env.BITCOIN_IP}:${process.env.BITCOIN_ZMQ_RAWBLOCK_PORT}`;
       }
-      if (filter === filters.hashBlock && process.env.BITCOIN_IP && process.env.BITCOIN_ZMQ_HASHBLOCK_PORT) {
+      if (filter === 'hashblock' && process.env.BITCOIN_IP && process.env.BITCOIN_ZMQ_HASHBLOCK_PORT) {
         zmqaddress = `tcp://${process.env.BITCOIN_IP}:${process.env.BITCOIN_ZMQ_HASHBLOCK_PORT}`;
       }
-      console.log('zmqclient createsocket connect zmqaddress: ', process.env.BITCOIN_IP, address, zmqaddress);
+      console.log('zmqclient createsocket connect zmqaddress: ', filter, process.env.BITCOIN_IP, address, zmqaddress);
       socket.connect(zmqaddress);
       socket.subscribe(filter);
     });
