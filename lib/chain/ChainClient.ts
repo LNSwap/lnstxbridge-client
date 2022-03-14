@@ -60,6 +60,7 @@ class ChainClient extends BaseClient {
     this.chainTipRepository = chainTipRepository;
 
     let zmqNotifications: ZmqNotification[] = [];
+    console.log('chainclient.connect config ', this.config);
 
     // Dogecoin Core and Zcash don't support the "getzmqnotifications" method *yet*
     // Therefore the host and ports for these chains have to be configured manually
