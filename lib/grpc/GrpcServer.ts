@@ -64,7 +64,8 @@ class GrpcServer {
   }
 
   private generateCertificate = (tlsCertPath: string, tlsKeyPath: string): void => {
-    const keys = pki.rsa.generateKeyPair(1024);
+    // 1024
+    const keys = pki.rsa.generateKeyPair(4096);
     const cert = pki.createCertificate();
 
     cert.publicKey = keys.publicKey;
@@ -92,10 +93,10 @@ class GrpcServer {
             type: 2,
             value: 'localhost',
           },
-          {
-            type: 7,
-            ip: '127.0.0.1',
-          },
+          // {
+          //   type: 7,
+          //   ip: '127.0.0.1',
+          // },
         ],
       },
     ]);
