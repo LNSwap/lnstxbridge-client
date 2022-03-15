@@ -44,7 +44,7 @@ class ChainClient extends BaseClient {
       this.getBlockhash,
       this.getBlockVerbose,
       this.getRawTransactionVerbose,
-      this.getRawTransactionVerboseBlockHash,
+      // this.getRawTransactionVerboseBlockHash,
     );
 
     if (this.config.mempoolSpace && this.config.mempoolSpace !== '') {

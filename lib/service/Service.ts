@@ -19,7 +19,7 @@ import TimeoutDeltaProvider from './TimeoutDeltaProvider';
 import { Network } from '../wallet/ethereum/EthereumManager';
 import RateProvider, { PairType } from '../rates/RateProvider';
 import { getGasPrice } from '../wallet/ethereum/EthereumUtils';
-import { calculateStxOutTx, getAddressAllBalances, getFee, getInfo, getStacksNetwork, getStacksRawTransaction, mintNFTforUser, sponsorTx } from '../wallet/stacks/StacksUtils';
+import { calculateStxOutTx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, mintNFTforUser, sponsorTx } from '../wallet/stacks/StacksUtils';
 import WalletManager, { Currency } from '../wallet/WalletManager';
 import SwapManager, { ChannelCreationInfo } from '../swap/SwapManager';
 // etherDecimals, ethereumPrepayMinerFeeGasLimit,
@@ -58,17 +58,18 @@ import {
 
 import Balancer from './Balancer';
 
-import mempoolJS from "@mempool/mempool.js";
-import ReverseSwap from 'lib/db/models/ReverseSwap';
-const { bitcoin: { transactions } } = mempoolJS({
-  hostname: 'mempool.space'
-});
+// import mempoolJS from "@mempool/mempool.js";
+// import ReverseSwap from 'lib/db/models/ReverseSwap';
+// const { bitcoin: { transactions } } = mempoolJS({
+//   hostname: 'mempool.space'
+// });
 
 // increase listenerlimit
 require('events').EventEmitter.defaultMaxListeners = 100;
 
 import axios from 'axios';
 import { setConfig } from '../../lib/consts/Utils';
+import ReverseSwap from '../db/models/ReverseSwap';
 
 type LndNodeInfo = {
   nodeKey: string,
@@ -431,16 +432,16 @@ class Service {
       }
     }
 
-    // need blockhash because we're running a pruned node with no -txindex
-    if((await getInfo()).network_id === 1) {
-      const mempoolTx = await transactions.getTx({ txid: transactionHash });
-      return await currency.chainClient.getRawTransactionBlockHash(transactionHash, mempoolTx.status.block_hash);
-    } else {
-      // regtest
-      return await currency.chainClient.getRawTransaction(transactionHash);
-    }
+    // // need blockhash because we're running a pruned node with no -txindex
+    // if((await getInfo()).network_id === 1) {
+    //   const mempoolTx = await transactions.getTx({ txid: transactionHash });
+    //   return await currency.chainClient.getRawTransactionBlockHash(transactionHash, mempoolTx.status.block_hash);
+    // } else {
+    //   // regtest
+    //   return await currency.chainClient.getRawTransaction(transactionHash);
+    // }
     
-    // return await currency.chainClient.getRawTransaction(transactionHash);
+    return await currency.chainClient.getRawTransaction(transactionHash);
   }
 
   /**
@@ -477,16 +478,16 @@ class Service {
 
     const { blocks } = await currency.chainClient.getBlockchainInfo();
     this.logger.info('service.455 getSwapTransaction getRawTransaction which will fail due to pruned node.');
-    // const transactionHex = await currency.chainClient.getRawTransaction(swap.lockupTransactionId);
-    let transactionHex;
-    // need blockhash because we're running a pruned node with no -txindex
-    if((await getInfo()).network_id === 1) {
-      const mempoolTx = await transactions.getTx({ txid: swap.lockupTransactionId! });
-      transactionHex = await currency.chainClient.getRawTransactionBlockHash(swap.lockupTransactionId, mempoolTx.status.block_hash);
-    } else {
-      // regtest
-      transactionHex = await currency.chainClient.getRawTransaction(swap.lockupTransactionId);
-    }
+    const transactionHex = await currency.chainClient.getRawTransaction(swap.lockupTransactionId);
+    // let transactionHex;
+    // // need blockhash because we're running a pruned node with no -txindex
+    // if((await getInfo()).network_id === 1) {
+    //   const mempoolTx = await transactions.getTx({ txid: swap.lockupTransactionId! });
+    //   transactionHex = await currency.chainClient.getRawTransactionBlockHash(swap.lockupTransactionId, mempoolTx.status.block_hash);
+    // } else {
+    //   // regtest
+    //   transactionHex = await currency.chainClient.getRawTransaction(swap.lockupTransactionId);
+    // }
 
     const response: any = {
       transactionHex,
