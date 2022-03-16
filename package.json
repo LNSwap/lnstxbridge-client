@@ -1,7 +1,7 @@
 {
   "name": "lnstxbridge-client",
   "version": "1.0.0",
-  "description": "Provider client for LN-STX Bridge",
+  "description": "Swap Provider client for LN-STX Bridge",
   "main": "dist/lib/Boltz.js",
   "scripts": {
     "postinstall": "npm run precompile",

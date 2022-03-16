@@ -16,9 +16,8 @@ jobs:
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d-%H-%M')"
 
-      - name: Get current package version
+      - uses: gagle/package-version@v1
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.1.0
 
       -
         name: Checkout
@@ -44,4 +43,4 @@ jobs:
           push: true
           tags: |
             pseudozach/lnstxbridge-client:latest
-            pseudozach/lnstxbridge-client:${{ steps.package-version.outputs.current-version}}
+            pseudozach/lnstxbridge-client:${{ steps.package-version.outputs.version }}
