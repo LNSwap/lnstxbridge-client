@@ -365,10 +365,11 @@ class ContractEventHandler extends EventEmitter {
       const amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
       // const claimAddress = txData.contract_call.function_args.filter(a=>a.name=='claimAddress')[0].repr;
       // const refundAddress = txData.contract_call.function_args.filter(a=>a.name=='refundAddress')[0].repr;
-      const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
+      // const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
       hashvalue = getHexString(crypto.sha256(getHexBuffer(preimage.slice(2))));
       // this is correct now
-      console.log('claimFound fetched from contract call: ', preimage,hashvalue,amount,timelock);
+      // timelock
+      console.log('claimFound fetched from contract call: ', preimage,hashvalue,amount,);
       // let preimageHash = txData.contract_call.function_args.filter(a=>a.name=="preimageHash")[0].repr
 
       // got all the data now check if we have the swap
@@ -379,11 +380,12 @@ class ContractEventHandler extends EventEmitter {
     if(refundFound) {
       // get data from contract call
       const preimageHash = txData.contract_call.function_args.filter(a=>a.name=='preimageHash')[0].repr;
-      const amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
+      // const amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
       // const claimAddress = txData.contract_call.function_args.filter(a=>a.name=='claimAddress')[0].repr;
       // const refundAddress = txData.contract_call.function_args.filter(a=>a.name=='refundAddress')[0].repr;
-      const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
-      console.log('refundFound fetched from contract call: ', preimageHash,amount,timelock);
+      // const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
+      // ,amount,timelock
+      console.log('refundFound fetched from contract call: ', preimageHash);
       // let preimageHash = txData.contract_call.function_args.filter(a=>a.name=="preimageHash")[0].repr
 
       // got all the data now check if we have the swap
@@ -563,10 +565,11 @@ class ContractEventHandler extends EventEmitter {
       const amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
       // const claimAddress = txData.contract_call.function_args.filter(a=>a.name=='claimAddress')[0].repr;
       // const refundAddress = txData.contract_call.function_args.filter(a=>a.name=='refundAddress')[0].repr;
-      const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
+      // const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
       hashvalue = getHexString(crypto.sha256(getHexBuffer(preimage.slice(2))));
       // this is correct now
-      console.log('claimFound fetched from contract call: ', preimage,hashvalue,amount,timelock);
+      // timelock
+      console.log('claimFound fetched from contract call: ', preimage,hashvalue,amount,);
       // let preimageHash = txData.contract_call.function_args.filter(a=>a.name=="preimageHash")[0].repr
 
       // got all the data now check if we have the swap
@@ -577,11 +580,12 @@ class ContractEventHandler extends EventEmitter {
     if(refundFound) {
       // get data from contract call
       const preimageHash = txData.contract_call.function_args.filter(a=>a.name=='preimageHash')[0].repr;
-      const amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
+      // const amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
       // const claimAddress = txData.contract_call.function_args.filter(a=>a.name=='claimAddress')[0].repr;
       // const refundAddress = txData.contract_call.function_args.filter(a=>a.name=='refundAddress')[0].repr;
-      const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
-      console.log('refundFound fetched from contract call: ', preimageHash,amount,timelock);
+      // const timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
+      // ,amount,timelock
+      console.log('refundFound fetched from contract call: ', preimageHash);
       // let preimageHash = txData.contract_call.function_args.filter(a=>a.name=="preimageHash")[0].repr
 
       // got all the data now check if we have the swap
