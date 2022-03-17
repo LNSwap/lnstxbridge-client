@@ -471,19 +471,23 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
         // bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
         // standardPrincipalCV('ST27SD3H5TTZXPBFXHN1ZNMFJ3HNE2070QX7ZN4FF'),
         bufferCV(preimageHash!),
-        bufferCV(Buffer.from(amount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from(timelock,'hex')),
+        bufferUint(amount),
+        bufferUint(timelock),
+        // bufferCV(Buffer.from(amount,'hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from(timelock,'hex')),
         standardPrincipalCV(claimPrincipal!),
       ];
     } else if(functionName.includes("refundStx")) {
       functionArgs = [
         bufferCV(preimageHash!),
-        bufferCV(Buffer.from(amount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from(timelock,'hex')),
+        bufferUint(amount),
+        bufferUint(timelock),
+        // bufferCV(Buffer.from(amount,'hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from(timelock,'hex')),
       ];
     } else {
       // (claimStx (preimage (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16)))
@@ -494,10 +498,12 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
         bufferCV(preimage!),
-        bufferCV(Buffer.from(amount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from(timelock,'hex')),
+        bufferUint(amount),
+        bufferUint(timelock),
+        // bufferCV(Buffer.from(amount,'hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from(timelock,'hex')),
       ];
     }
 
@@ -570,134 +576,134 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
 }
 
 // NOT USED
-export const calculateStxLockFee = async (contract:string, preimageHash: string) => {
-  // STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3_debug
-  let contractAddress = contract.split(".")[0];
-  let contractName = contract.split(".")[1];
+// export const calculateStxLockFee = async (contract:string, preimageHash: string) => {
+//   // STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3_debug
+//   let contractAddress = contract.split(".")[0];
+//   let contractName = contract.split(".")[1];
 
-  const postConditionCode = FungibleConditionCode.GreaterEqual;
-  const postConditionAmount = new BigNum(100000);
-  const postConditions = [
-    createSTXPostCondition(contract, postConditionCode, postConditionAmount),
-    // makeStandardSTXPostCondition(
-    //   contractAddress,
-    //   contractName,
-    //   postConditionCode,
-    //   postConditionAmount
-    // )
-  ];
+//   const postConditionCode = FungibleConditionCode.GreaterEqual;
+//   const postConditionAmount = new BigNum(100000);
+//   const postConditions = [
+//     createSTXPostCondition(contract, postConditionCode, postConditionAmount),
+//     // makeStandardSTXPostCondition(
+//     //   contractAddress,
+//     //   contractName,
+//     //   postConditionCode,
+//     //   postConditionAmount
+//     // )
+//   ];
 
-  let functionArgs = [
-    bufferCV(Buffer.from(preimageHash, 'hex')),
-    bufferCV(Buffer.from('0000000000000000000000000018b1df','hex')),
-    bufferCV(Buffer.from('01','hex')),
-    bufferCV(Buffer.from('01','hex')),
-    bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
-    standardPrincipalCV('ST27SD3H5TTZXPBFXHN1ZNMFJ3HNE2070QX7ZN4FF'),
-  ];
+//   let functionArgs = [
+//     bufferCV(Buffer.from(preimageHash, 'hex')),
+//     bufferCV(Buffer.from('0000000000000000000000000018b1df','hex')),
+//     bufferCV(Buffer.from('01','hex')),
+//     bufferCV(Buffer.from('01','hex')),
+//     bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
+//     standardPrincipalCV('ST27SD3H5TTZXPBFXHN1ZNMFJ3HNE2070QX7ZN4FF'),
+//   ];
 
-  // console.log("stacksutil.231 functionargs: ", functionName, JSON.stringify(functionArgs));
+//   // console.log("stacksutil.231 functionargs: ", functionName, JSON.stringify(functionArgs));
 
-  const txOptions = {
-    contractAddress,
-    contractName,
-    functionName: 'lockStx',
-    functionArgs: functionArgs,
-    senderKey: getStacksNetwork().privateKey,
-    validateWithAbi: true,
-    network: stacksNetwork,
-    postConditionMode: PostConditionMode.Allow,
-    postConditions,
-    anchorMode: AnchorMode.Any,
-    onFinish: data => {
-      console.log('Stacks claim Transaction:', JSON.stringify(data));
-    }
-  };
+//   const txOptions = {
+//     contractAddress,
+//     contractName,
+//     functionName: 'lockStx',
+//     functionArgs: functionArgs,
+//     senderKey: getStacksNetwork().privateKey,
+//     validateWithAbi: true,
+//     network: stacksNetwork,
+//     postConditionMode: PostConditionMode.Allow,
+//     postConditions,
+//     anchorMode: AnchorMode.Any,
+//     onFinish: data => {
+//       console.log('Stacks claim Transaction:', JSON.stringify(data));
+//     }
+//   };
 
-  // this.toObject(txOptions)
-  // console.log("stacks contracthandler.84 txOptions: " + this.toObject(txOptions));
+//   // this.toObject(txOptions)
+//   // console.log("stacks contracthandler.84 txOptions: " + this.toObject(txOptions));
 
-  const transaction = await makeContractCall(txOptions);
-  // console.log("stacksutil.209 transaction: ", transaction)
+//   const transaction = await makeContractCall(txOptions);
+//   // console.log("stacksutil.209 transaction: ", transaction)
 
-  // to see the raw serialized tx
-  const serializedTx = transaction.serialize();
-  // .toString('hex');
-  // console.log('serializedTx and byteLength ', serializedTx, serializedTx.byteLength);
+//   // to see the raw serialized tx
+//   const serializedTx = transaction.serialize();
+//   // .toString('hex');
+//   // console.log('serializedTx and byteLength ', serializedTx, serializedTx.byteLength);
 
-  // resolves to number of microstacks per byte!!!
-  const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
+//   // resolves to number of microstacks per byte!!!
+//   const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
   
-  // I think we need to serialize and get the length in bytes and multiply with base fee rate.
-  const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
+//   // I think we need to serialize and get the length in bytes and multiply with base fee rate.
+//   const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
 
-  // console.log("estimatedFee, totalfee: ", estimateFee, totalfee);
-  return Number(totalfee);
-}
+//   // console.log("estimatedFee, totalfee: ", estimateFee, totalfee);
+//   return Number(totalfee);
+// }
 
-// NOT USED
-export const calculateStxClaimFee = async (contract:string, preimage: string, amount: string, timelock: string) => {
-  // STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3_debug
-  let contractAddress = contract.split(".")[0];
-  let contractName = contract.split(".")[1];
+// // NOT USED
+// export const calculateStxClaimFee = async (contract:string, preimage: string, amount: string, timelock: string) => {
+//   // STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3_debug
+//   let contractAddress = contract.split(".")[0];
+//   let contractName = contract.split(".")[1];
 
-  const postConditionCode = FungibleConditionCode.GreaterEqual;
-  const postConditionAmount = new BigNum(100000);
-  const postConditions = [
-    makeContractSTXPostCondition(
-      contractAddress,
-      contractName,
-      postConditionCode,
-      postConditionAmount
-    )
-  ];
+//   const postConditionCode = FungibleConditionCode.GreaterEqual;
+//   const postConditionAmount = new BigNum(100000);
+//   const postConditions = [
+//     makeContractSTXPostCondition(
+//       contractAddress,
+//       contractName,
+//       postConditionCode,
+//       postConditionAmount
+//     )
+//   ];
 
-  let functionArgs = [
-    bufferCV(Buffer.from(preimage, 'hex')),
-    bufferCV(Buffer.from(amount,'hex')),
-    bufferCV(Buffer.from('01','hex')),
-    bufferCV(Buffer.from('01','hex')),
-    bufferCV(Buffer.from(timelock,'hex')),
-  ];
+//   let functionArgs = [
+//     bufferCV(Buffer.from(preimage, 'hex')),
+//     bufferCV(Buffer.from(amount,'hex')),
+//     bufferCV(Buffer.from('01','hex')),
+//     bufferCV(Buffer.from('01','hex')),
+//     bufferCV(Buffer.from(timelock,'hex')),
+//   ];
 
-  // console.log("stacksutil.231 functionargs: ", functionName, JSON.stringify(functionArgs));
+//   // console.log("stacksutil.231 functionargs: ", functionName, JSON.stringify(functionArgs));
 
-  const txOptions = {
-    contractAddress,
-    contractName,
-    functionName: 'claimStx',
-    functionArgs: functionArgs,
-    senderKey: getStacksNetwork().privateKey,
-    validateWithAbi: true,
-    network: stacksNetwork,
-    postConditionMode: PostConditionMode.Allow,
-    postConditions,
-    anchorMode: AnchorMode.Any,
-    onFinish: data => {
-      console.log('Stacks claim Transaction:', JSON.stringify(data));
-    }
-  };
+//   const txOptions = {
+//     contractAddress,
+//     contractName,
+//     functionName: 'claimStx',
+//     functionArgs: functionArgs,
+//     senderKey: getStacksNetwork().privateKey,
+//     validateWithAbi: true,
+//     network: stacksNetwork,
+//     postConditionMode: PostConditionMode.Allow,
+//     postConditions,
+//     anchorMode: AnchorMode.Any,
+//     onFinish: data => {
+//       console.log('Stacks claim Transaction:', JSON.stringify(data));
+//     }
+//   };
 
-  // this.toObject(txOptions)
-  // console.log("stacks contracthandler.84 txOptions: " + this.toObject(txOptions));
+//   // this.toObject(txOptions)
+//   // console.log("stacks contracthandler.84 txOptions: " + this.toObject(txOptions));
 
-  const transaction = await makeContractCall(txOptions);
-  // console.log("stacksutil.209 transaction: ", transaction)
+//   const transaction = await makeContractCall(txOptions);
+//   // console.log("stacksutil.209 transaction: ", transaction)
 
-  // to see the raw serialized tx
-  const serializedTx = transaction.serialize();
-  // .toString('hex');
-  // console.log('serializedTx and byteLength ', serializedTx, serializedTx.byteLength);
+//   // to see the raw serialized tx
+//   const serializedTx = transaction.serialize();
+//   // .toString('hex');
+//   // console.log('serializedTx and byteLength ', serializedTx, serializedTx.byteLength);
 
-  // resolves to number of microstacks per byte!!!
-  const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
+//   // resolves to number of microstacks per byte!!!
+//   const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
   
-  // I think we need to serialize and get the length in bytes and multiply with base fee rate.
-  const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
+//   // I think we need to serialize and get the length in bytes and multiply with base fee rate.
+//   const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
 
-  // console.log("estimatedFee, totalfee: ", estimateFee, totalfee);
-  return Number(totalfee);
-}
+//   // console.log("estimatedFee, totalfee: ", estimateFee, totalfee);
+//   return Number(totalfee);
+// }
 
 // window is not defined?! -- I think we can use cross-fetch but meh no need.
 // export const getInfo = async () => {
@@ -912,4 +918,8 @@ export function unHex(input) {
   } else {
     return input
   }
+}
+
+function bufferUint(amount: string): any {
+  throw new Error('Function not implemented.');
 }

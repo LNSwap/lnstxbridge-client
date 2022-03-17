@@ -8,7 +8,7 @@ import ERC20WalletProvider from '../providers/ERC20WalletProvider';
 import { etherDecimals, ethereumPrepayMinerFeeGasLimit } from '../../consts/Consts';
 
 // makeContractCall, , broadcastTransaction, makeStandardSTXPostCondition
-import { bufferCV, standardPrincipalCV, contractPrincipalCV, AnchorMode, FungibleConditionCode, makeContractSTXPostCondition, PostConditionMode, makeContractCall, broadcastTransaction, TxBroadcastResult } from '@stacks/transactions';
+import { bufferCV, uintCV, standardPrincipalCV, contractPrincipalCV, AnchorMode, FungibleConditionCode, makeContractSTXPostCondition, PostConditionMode, makeContractCall, broadcastTransaction, TxBroadcastResult } from '@stacks/transactions';
 import SIP10WalletProvider from '../providers/SIP10WalletProvider';
 // import { contractPrincipalCV } from '@blockstack/stacks-transactions';
 // import { StacksMocknet, StacksTestnet, StacksMainnet } from '@stacks/network';
@@ -111,10 +111,12 @@ class ContractHandler {
     // (lockStx (preimageHash (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16))
     const functionArgs = [
       bufferCV(preimageHash),
-      bufferCV(Buffer.from(paddedamount,'hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from(tl3,'hex')),
+      uintCV(swapamount),
+      uintCV(timeLock.toString()),
+      // bufferCV(Buffer.from(paddedamount,'hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from(tl3,'hex')),
       standardPrincipalCV(claimAddress),
     ];
     // this.logger.verbose("stacks contracthandler.111 functionargs: "+stringify(functionArgs));
@@ -236,10 +238,11 @@ class ContractHandler {
     const functionArgs = [
       // bufferCV(Buffer.from('4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a', 'hex')),
       bufferCV(preimage),
-      bufferCV(Buffer.from(paddedamount,'hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from(tl3,'hex')),
+      uintCV(decimalamount),
+      // bufferCV(Buffer.from(paddedamount,'hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from(tl3,'hex')),
     ];
     this.logger.verbose('stacks contracthandler.198 functionargs: ' + stringify(functionArgs));
 
@@ -339,10 +342,10 @@ class ContractHandler {
     // (refundStx (preimageHash (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16))
     const functionArgs = [
       bufferCV(preimageHash),
-      bufferCV(Buffer.from(paddedamount,'hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from(tl3,'hex')),
+      // bufferCV(Buffer.from(paddedamount,'hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from(tl3,'hex')),
     ];
     this.logger.verbose('stacks contracthandler.306 refund functionargs: ' + stringify(functionArgs));
 
@@ -451,10 +454,12 @@ class ContractHandler {
     // lockStx (preimageHash (buff 32)) (amount (buff 16)) (tokenAddress (buff 42)) (claimAddress (buff 42)) (timelock (buff 16)) (claimPrincipal principal) (tokenPrincipal <ft-trait>)
   const functionArgs = [
       bufferCV(preimageHash),
-      bufferCV(Buffer.from(paddedamount,'hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from(tl3,'hex')),
+      uintCV(swapamount),
+      uintCV(timeLock.toString()),
+      // bufferCV(Buffer.from(paddedamount,'hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from(tl3,'hex')),
       standardPrincipalCV(claimAddress),
       contractPrincipalCV(token.getTokenContractAddress(),token.getTokenContractName()),
     ];
@@ -551,10 +556,11 @@ class ContractHandler {
     const functionArgs = [
       // bufferCV(Buffer.from('4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a', 'hex')),
       bufferCV(preimage),
-      bufferCV(Buffer.from(paddedamount,'hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from('01','hex')),
-      bufferCV(Buffer.from(tl3,'hex')),
+      uintCV(swapamount),
+      // bufferCV(Buffer.from(paddedamount,'hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from('01','hex')),
+      // bufferCV(Buffer.from(tl3,'hex')),
       contractPrincipalCV(token.getTokenContractAddress(), token.getTokenContractName()),
     ];
     this.logger.verbose('stacks contracthandler.523 functionargs: ' + stringify(functionArgs));
@@ -652,10 +658,10 @@ class ContractHandler {
       // (refundStx (preimageHash (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16)) (tokenPrincipal <ft-trait>))
       const functionArgs = [
         bufferCV(preimageHash),
-        bufferCV(Buffer.from(paddedamount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from(tl3,'hex')),
+        // bufferCV(Buffer.from(paddedamount,'hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from('01','hex')),
+        // bufferCV(Buffer.from(tl3,'hex')),
         contractPrincipalCV(token.getTokenContractAddress(), token.getTokenContractName())
       ];
       this.logger.verbose('stacks contracthandler.624 functionargs: '+stringify(functionArgs));
