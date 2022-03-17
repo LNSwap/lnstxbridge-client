@@ -7,7 +7,7 @@ import axios from 'axios';
 import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 // TransactionsApi
 import type { Transaction } from '@stacks/stacks-blockchain-api-types';
-import { broadcastTransaction, BufferReader, deserializeTransaction, estimateContractFunctionCall, makeSTXTokenTransfer, sponsorTransaction } from '@stacks/transactions';
+import { broadcastTransaction, BufferReader, deserializeTransaction, estimateContractFunctionCall, makeSTXTokenTransfer, sponsorTransaction, uintCV } from '@stacks/transactions';
 
 import { bufferCV, 
   standardPrincipalCV, 
@@ -471,8 +471,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
         // bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
         // standardPrincipalCV('ST27SD3H5TTZXPBFXHN1ZNMFJ3HNE2070QX7ZN4FF'),
         bufferCV(preimageHash!),
-        bufferUint(amount),
-        bufferUint(timelock),
+        uintCV(amount),
+        uintCV(timelock),
         // bufferCV(Buffer.from(amount,'hex')),
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('01','hex')),
@@ -482,8 +482,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
     } else if(functionName.includes("refundStx")) {
       functionArgs = [
         bufferCV(preimageHash!),
-        bufferUint(amount),
-        bufferUint(timelock),
+        uintCV(amount),
+        uintCV(timelock),
         // bufferCV(Buffer.from(amount,'hex')),
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('01','hex')),
@@ -498,8 +498,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
         bufferCV(preimage!),
-        bufferUint(amount),
-        bufferUint(timelock),
+        uintCV(amount),
+        uintCV(timelock),
         // bufferCV(Buffer.from(amount,'hex')),
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('01','hex')),
@@ -920,6 +920,3 @@ export function unHex(input) {
   }
 }
 
-function bufferUint(amount: string): any {
-  throw new Error('Function not implemented.');
-}
