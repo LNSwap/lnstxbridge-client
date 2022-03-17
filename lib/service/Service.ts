@@ -54,6 +54,7 @@ import {
   mapToObject,
   reverseBuffer,
   splitPairId,
+  stringify,
 } from '../Utils';
 
 import Balancer from './Balancer';
@@ -1799,7 +1800,7 @@ class Service {
           url: this.providerUrl,
           pairs: mapToObject(dbPairs.pairs),
         });
-        this.logger.verbose(`service.1795 joinAggregator response: ${response.data}`);
+        this.logger.verbose(`service.1795 joinAggregator response: ${stringify(response.data)}`);
         if(response.data.result) clearInterval(interval);
       } catch (error) {
         this.logger.error(`service.1781 joinAggregator error: ${error.message}`);
