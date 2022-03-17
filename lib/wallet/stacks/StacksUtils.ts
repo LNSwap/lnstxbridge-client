@@ -437,6 +437,7 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
     timelock = unHex(timelock)
     // const preimageorhash = preimageHash ? getHexString(preimageHash) : getHexString(preimage!)
     const decimalamount = parseInt(amount.toString(),10);
+    const decimaltimelock = parseInt(amount.toString(),10);
     // console.log('calculateStacksTxFee.428 start ', functionName, preimageorhash, amount, timelock)
 
     const postConditionCode = FungibleConditionCode.GreaterEqual;
@@ -471,8 +472,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
         // bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
         // standardPrincipalCV('ST27SD3H5TTZXPBFXHN1ZNMFJ3HNE2070QX7ZN4FF'),
         bufferCV(preimageHash!),
-        uintCV(amount),
-        uintCV(timelock),
+        uintCV(decimalamount),
+        uintCV(decimaltimelock),
         // bufferCV(Buffer.from(amount,'hex')),
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('01','hex')),
@@ -482,8 +483,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
     } else if(functionName.includes("refundStx")) {
       functionArgs = [
         bufferCV(preimageHash!),
-        uintCV(amount),
-        uintCV(timelock),
+        uintCV(decimalamount),
+        uintCV(decimaltimelock),
         // bufferCV(Buffer.from(amount,'hex')),
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('01','hex')),
@@ -498,8 +499,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('0000000000000000000000000000405a','hex')),
         bufferCV(preimage!),
-        uintCV(amount),
-        uintCV(timelock),
+        uintCV(decimalamount),
+        uintCV(decimaltimelock),
         // bufferCV(Buffer.from(amount,'hex')),
         // bufferCV(Buffer.from('01','hex')),
         // bufferCV(Buffer.from('01','hex')),
