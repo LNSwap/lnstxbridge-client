@@ -1799,10 +1799,10 @@ class Service {
           url: this.providerUrl,
           pairs: mapToObject(dbPairs.pairs),
         });
-        console.log('service.1795 joinAggregator response: ', response.data);
+        this.logger.verbose(`service.1795 joinAggregator response: ${response.data}`);
         if(response.data.result) clearInterval(interval);
       } catch (error) {
-        console.log('service.1781 joinAggregator error: ', error.message);
+        this.logger.error(`service.1781 joinAggregator error: ${error.message}`);
       }
     }, 60000);
 
