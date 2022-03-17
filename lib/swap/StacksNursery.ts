@@ -400,8 +400,11 @@ class StacksNursery extends EventEmitter {
 
       // 0x000000000000000000000000001e708f
       // *100 + 100 because stx is 10^6 while boltz is 10^8
-      const swapamount = (parseInt(etherSwapValues.amount + '',16) * 100) + 100;
+      // const swapamount = (parseInt(etherSwapValues.amount + '',16) * 100) + 100;
       //  + 100; // this should not be needed - just to protect against compare issues?
+
+      // optimized contract has uint amount
+      const swapamount = parseInt(etherSwapValues.amount.toString().split('u')[1]) * 100 + 100;
       this.logger.verbose('stacksnursery.150 etherSwapValues.amount, swapamount, transactionHash ' + etherSwapValues.amount + ', ' + swapamount + ', ' + transactionHash);
       swap = await this.swapRepository.setLockupTransaction(
         swap,
@@ -422,8 +425,10 @@ class StacksNursery extends EventEmitter {
       //   return;
       // }
 
-      const swaptimelock = parseInt(etherSwapValues.timelock + '',16);
-      this.logger.verbose('etherSwapValues.timelock, swap.timeoutBlockHeight ' +etherSwapValues.timelock + ', ' + swap.timeoutBlockHeight);
+      // const swaptimelock = parseInt(etherSwapValues.timelock + '',16);
+      this.logger.verbose('etherSwapValues.timelock, swap.timeoutBlockHeight ' + etherSwapValues.timelock + ', ' + swap.timeoutBlockHeight + ', ' + etherSwapValues.timelock.toString().split('u')[1]);
+      const swaptimelock = Number(etherSwapValues.timelock.toString().split('u')[1]);
+      console.log('stacksnursery.431 swaptimelock ', swaptimelock, swaptimelock !== swap.timeoutBlockHeight);
       // etherSwapValues.timelock
       if (swaptimelock !== swap.timeoutBlockHeight) {
         this.emit(
@@ -898,6 +903,7 @@ class StacksNursery extends EventEmitter {
           SwapUpdateEvent.InvoiceSettled,
           SwapUpdateEvent.TransactionRefunded,
           SwapUpdateEvent.TransactionClaimed, // not needed?
+          SwapUpdateEvent.TransactionLockupFailed, // if we couldn't lockup - stop polling
           // SwapUpdateEvent.ASTransactionConfirmed,
         ],
       } as any,
