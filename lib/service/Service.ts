@@ -1822,7 +1822,7 @@ class Service {
         id: message.transaction?.id,
         hex: message.transaction?.hex,
       }
-    })
+    });
   }
 
   // // allow client to check status of a swap
