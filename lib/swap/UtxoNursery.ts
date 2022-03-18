@@ -195,7 +195,7 @@ class UtxoNursery extends EventEmitter {
 
     for (let vin = 0; vin < transaction.ins.length; vin += 1) {
       const input = transaction.ins[vin];
-      // console.log('tx input ', input, input.script);
+      console.log('tx input ', input, input.script, transactionHashToId(input.hash), input.index);
       // console.log('find swap with asLockupAddress = ', wallet.encodeAddress(input.script));
 
       const atomicSwap = await this.swapRepository.getSwap({

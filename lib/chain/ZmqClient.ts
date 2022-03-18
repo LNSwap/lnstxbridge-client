@@ -202,7 +202,6 @@ class ZmqClient extends EventEmitter {
 
       if (this.isRelevantTransaction(transaction)) {
         console.log('zmq.185 isRelevantTransaction', transaction);
-        
 
         try {
           const transactionData = await this.getRawTransactionVerbose(id) as RawTransaction;
