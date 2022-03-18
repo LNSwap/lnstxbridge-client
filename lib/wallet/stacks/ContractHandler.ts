@@ -461,7 +461,7 @@ class ContractHandler {
     // lockStx (preimageHash (buff 32)) (amount (buff 16)) (tokenAddress (buff 42)) (claimAddress (buff 42)) (timelock (buff 16)) (claimPrincipal principal) (tokenPrincipal <ft-trait>)
   const functionArgs = [
       bufferCV(preimageHash),
-      uintCV(swapamount),
+      uintCV(decimalamount),
       uintCV(timeLock.toString()),
       // bufferCV(Buffer.from(paddedamount,'hex')),
       // bufferCV(Buffer.from('01','hex')),
