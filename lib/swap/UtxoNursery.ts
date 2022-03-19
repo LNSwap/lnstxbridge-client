@@ -139,7 +139,8 @@ class UtxoNursery extends EventEmitter {
         transaction.getId(),
       );
 
-      const expectedAmount = Math.round(swap.quoteAmount! * 10**8);
+      // cover the case: locked 14763 is less than expected 14764
+      const expectedAmount = Math.round(swap.quoteAmount! * 10**8) - 1;
       if (expectedAmount) {
         // swapOutput.value
         if (expectedAmount > output.value) {
