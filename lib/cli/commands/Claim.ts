@@ -1,5 +1,6 @@
 import { Arguments } from 'yargs';
-import { address, ECPair, Transaction } from 'bitcoinjs-lib';
+import { address, Transaction } from 'bitcoinjs-lib';
+import { ECPair } from '../../ECPairHelper';
 import { Networks, constructClaimTransaction, detectSwap } from 'boltz-core';
 import BuilderComponents from '../BuilderComponents';
 import { getHexBuffer, stringify } from '../../Utils';
