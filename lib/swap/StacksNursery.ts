@@ -362,7 +362,7 @@ class StacksNursery extends EventEmitter {
           status: {
             [Op.or]: [
               SwapUpdateEvent.ASTransactionMempool,
-              SwapUpdateEvent.ASTransactionConfirmed,
+              // SwapUpdateEvent.ASTransactionConfirmed, // no need to check for this on client!
             ],
           },
         });
@@ -370,7 +370,7 @@ class StacksNursery extends EventEmitter {
         // console.log('checking for atomic swap: ', getHexString(etherSwapValues.preimageHash), swap);
 
         if (swap) {
-          console.log('atomic onchain swap found, they locked and we locked ', swap.id);
+          console.log('sn.373 atomic onchain swap found, they locked and we locked ', swap.id);
           // start listening to claim - which we already are.
           // need to set astransactionconfirmed so UI can show claim
           // await this.swapRepository.setSwapStatus(swap, SwapUpdateEvent.ASTransactionConfirmed);
