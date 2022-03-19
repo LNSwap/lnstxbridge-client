@@ -116,6 +116,7 @@ class Migration {
         await this.sequelize.query('ALTER TABLE reverseSwaps ADD preimageHash VARCHAR(255)');
         await this.sequelize.query('ALTER TABLE reverseSwaps ADD failureReason VARCHAR(255)');
         await this.sequelize.query('ALTER TABLE reverseSwaps ADD swapType VARCHAR(255)');
+        await this.sequelize.query('ALTER TABLE reverseSwaps ADD rawTx VARCHAR(1255)');
 
         const allReverseSwaps = await ReverseSwap.findAll();
 
