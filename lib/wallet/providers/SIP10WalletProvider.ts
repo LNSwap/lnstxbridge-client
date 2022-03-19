@@ -3,7 +3,7 @@ import Logger from '../../Logger';
 import { Sip10Token } from '../../consts/Types';
 // import { getGasPrice } from '../ethereum/EthereumUtils';
 import WalletProviderInterface, { SentTransaction, WalletBalance } from './WalletProviderInterface';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from 'bip322';
 
 import {
   callReadOnlyFunction,

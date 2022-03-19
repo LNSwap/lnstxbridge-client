@@ -3,7 +3,7 @@ import Logger from '../../Logger';
 // import { etherDecimals } from '../../consts/Consts';
 // import { getGasPrice } from '../ethereum/EthereumUtils';
 import WalletProviderInterface, { SentTransaction, WalletBalance } from './WalletProviderInterface';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from 'bip322';
 import { deriveStxAddressChain } from '@stacks/keychain';
 import { ChainID, AnchorMode, makeSTXTokenTransfer, broadcastTransaction } from '@stacks/transactions';
 import { getAddressBalance, getStacksNetwork } from '../stacks/StacksUtils';

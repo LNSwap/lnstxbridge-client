@@ -303,6 +303,10 @@ export const getPubkeyHashFunction = (outputType: OutputType): (
 
     case OutputType.Legacy:
       return p2pkhOutput;
+
+    case OutputType.Taproot:
+      throw new Error('TAPROOT NOT SUPPORTED');
+      
   }
 };
 
@@ -316,6 +320,9 @@ export const getScriptHashFunction = (outputType: OutputType): (scriptHex: Buffe
 
     case OutputType.Legacy:
       return p2shOutput;
+
+    case OutputType.Taproot:
+      throw new Error('TAPROOT NOT SUPPORTED');
   }
 };
 
