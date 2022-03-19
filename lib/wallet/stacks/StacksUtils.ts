@@ -9,13 +9,13 @@ import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 import type { Transaction } from '@stacks/stacks-blockchain-api-types';
 import { broadcastTransaction, BufferReader, deserializeTransaction, estimateContractFunctionCall, makeSTXTokenTransfer, sponsorTransaction, uintCV } from '@stacks/transactions';
 
-import { bufferCV, 
-  standardPrincipalCV, 
-  AnchorMode, 
-  FungibleConditionCode, 
-  makeContractSTXPostCondition, 
+import { bufferCV,
+  standardPrincipalCV,
+  AnchorMode,
+  FungibleConditionCode,
+  makeContractSTXPostCondition,
   createSTXPostCondition,
-  PostConditionMode, 
+  PostConditionMode,
   makeContractCall } from '@stacks/transactions';
 import { StacksMocknet, StacksTestnet, StacksMainnet, StacksNetwork } from '@stacks/network';
 import { StacksConfig } from 'lib/Config';
@@ -31,7 +31,7 @@ let stacksNetwork:StacksNetwork = new StacksMainnet();
 // public instances seem to have socket timeout :(
 // so we always use local instance for both coreapiurl and ws - only set network type depending on the provider endpoint name
 let coreApiUrl = 'http://localhost:3999';
-let wsUrl = 'ws://localhost:3999/extended/v1/ws'; 
+let wsUrl = 'ws://localhost:3999/extended/v1/ws';
 let stxSwapAddress = 'STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3';
 let privateKey = '';
 let signerAddress = 'SP13R6D5P5TYE71D81GZQWSD9PGQMQQN54A2YT3BY';
@@ -99,7 +99,7 @@ export const getAddressBalance = async (address:string) => {
   //   fungible_tokens: {},
   //   non_fungible_tokens: {}
   // }
-  
+
 };
 
 export const getAddressAllBalances = async (initAddress?:string) => {
@@ -152,12 +152,12 @@ export const getAddressAllBalances = async (initAddress?:string) => {
   //   },
   //   "non_fungible_tokens": {}
   // }
-  
+
 };
 
 export const setStacksNetwork = (network: string, stacksConfig: StacksConfig, derivedPrivateKey: string, derivedSignerAddress: string, signerNonce: number, currentBlockHeight: number) => {
   // let network:string = "mocknet";
- 
+
   if (network.includes('localhost')) {
     coreApiUrl = 'http://localhost:3999';
     wsUrl = 'ws://localhost:3999/extended/v1/ws';
@@ -198,7 +198,7 @@ export const getFee = async () => {
   const url = `${coreApiUrl}/v2/fees/transfer`;
   const response = await axios.get(url);
   // console.log("stacksutils  getFee", response.data);
-  
+
   // const STX_TRANSFER_TX_SIZE_BYTES = 180;
   // const fee = new BigNumber(feeRate.data).multipliedBy(STX_TRANSFER_TX_SIZE_BYTES);
   return BigNumber.from(response.data).mul(gweiDecimals);
@@ -248,7 +248,7 @@ export const getAccountInfo = async (initAddress: string) => {
   } catch (e) {
     console.log('getAccountInfo error: ', e);
     return {nonce: 0};
-  } 
+  }
 };
 
 export const getAccountNonce = async (initAddress?: string) => {
@@ -276,7 +276,7 @@ export const getAccountNonce = async (initAddress?: string) => {
   } catch (e) {
     console.log('getAccountNonce error: ', e);
     return {possible_next_nonce: 0};
-  } 
+  }
 };
 
 export const incrementNonce = () => {
@@ -298,7 +298,7 @@ export const getTransaction = async (txid:string): Promise<Transaction> => {
 // Find claim call for an NFT and calculate stx cost of minting
 export const calculateStxOutTx = async (nftContract:string, contractSignature:string) => {
   if(contractSignature === '') contractSignature = 'claim-for';
-  
+
   const nfturl = `${coreApiUrl}/extended/v1/address/${nftContract}/transactions`;
   const txnresponse = await axios.get(nfturl);
   let claimtx;
@@ -313,7 +313,7 @@ export const calculateStxOutTx = async (nftContract:string, contractSignature:st
   if(!claimtx) {
     return;
   }
-  
+
   const txurl = `${coreApiUrl}/extended/v1/tx/${claimtx.tx_id}`;
   const response = await axios.get(txurl);
   const events = response.data.events;
@@ -542,7 +542,7 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
 
     // resolves to number of microstacks per byte!!!
     // const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
-    
+
     // I think we need to serialize and get the length in bytes and multiply with base fee rate.
     // const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
 
@@ -637,7 +637,7 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
 
 //   // resolves to number of microstacks per byte!!!
 //   const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
-  
+
 //   // I think we need to serialize and get the length in bytes and multiply with base fee rate.
 //   const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
 
@@ -701,7 +701,7 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
 
 //   // resolves to number of microstacks per byte!!!
 //   const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
-  
+
 //   // I think we need to serialize and get the length in bytes and multiply with base fee rate.
 //   const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
 
@@ -778,7 +778,7 @@ export const calculateMintFee = async (contract:string, functionName:string, use
 
   // resolves to number of microstacks per byte!!!
   const estimateFee = await estimateContractFunctionCall(transaction, stacksNetwork);
-  
+
   // I think we need to serialize and get the length in bytes and multiply with base fee rate.
   const totalfee = BigNumber.from(serializedTx.byteLength).mul(estimateFee);
 
@@ -796,11 +796,11 @@ export const mintNFTforUser = async (contract:string, functionName:string, userA
     const postConditions = [
       createSTXPostCondition(signerAddress, postConditionCode, postConditionAmount),
     ];
-  
+
     let functionArgs = [
       standardPrincipalCV(userAddress),
     ];
-  
+
     // console.log("stacksutil.231 functionargs: ", functionName, JSON.stringify(functionArgs));
     const mintFee = await calculateMintFee(contract, functionName, userAddress, mintCost);
     console.log('stacksutils.725 mintFee: ', mintFee);
@@ -823,7 +823,7 @@ export const mintNFTforUser = async (contract:string, functionName:string, userA
         console.log('Stacks nftMint Transaction:', JSON.stringify(data));
       }
     };
-  
+
     const transaction = await makeContractCall(txOptions);
     const broadcastResponse = await broadcastTransaction(transaction, getStacksNetwork().stacksNetwork);
     if(broadcastResponse.error) {
@@ -849,9 +849,10 @@ export const sponsorTx = async (tx:string, minerfee:number) => {
     const bufferReader = new BufferReader(Buffer.from(tx, 'hex'));
     const deserializedTx = deserializeTransaction(bufferReader);
     const sponsorKey = getStacksNetwork().privateKey;
-    const fee = new BigNum(minerfee*10**6);   
+    const fee = new BigNum(minerfee*10**6);
     // console.log('deserializedTx ', deserializedTx);
 
+    console.log('stacksutils.855 sponsortx nonce: ', nonce);
     const sponsorOptions = {
       transaction: deserializedTx,
       sponsorPrivateKey: sponsorKey,
@@ -860,8 +861,8 @@ export const sponsorTx = async (tx:string, minerfee:number) => {
       fee,
     };
     // console.log('sponsorTx sponsorOptions ', sponsorOptions);
-    
-    const sponsoredTx = await sponsorTransaction(sponsorOptions);  
+
+    const sponsoredTx = await sponsorTransaction(sponsorOptions);
     const broadcastResponse = await broadcastTransaction(sponsoredTx, stacksNetwork);
     if(broadcastResponse.error) {
       console.log(`stacksutils.788 sponsorTx error: ${broadcastResponse.error} `, broadcastResponse);
@@ -871,7 +872,7 @@ export const sponsorTx = async (tx:string, minerfee:number) => {
       const txId = broadcastResponse.txid;
       console.log('stacksutils.793 sponsorTx txId, minerfee', txId, minerfee);
       return txId;
-    }    
+    }
   } catch(err) {
     console.log('catch err sponsorTx ', err);
   }
@@ -889,7 +890,7 @@ export const sendSTX = async (address:string, amount: number, memo: string) => {
       senderKey: getStacksNetwork().privateKey,
       network: stacksNetwork,
       memo,
-      nonce: new BigNum(nonce), 
+      nonce: new BigNum(nonce),
       fee: new BigNum(10000), // TODO: dynamically calculate fee later
       anchorMode: AnchorMode.Any,
     };
@@ -909,7 +910,7 @@ export const sendSTX = async (address:string, amount: number, memo: string) => {
       const txId = broadcastResponse.txid;
       console.log('stacksutils.898 sendstx txId ', txId);
       return txId;
-    }    
+    }
   } catch (error) {
     console.log('stacksutils.903 sendstx error ', error.message);
   }

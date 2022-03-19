@@ -51,7 +51,7 @@ import {
 } from '../Utils';
 import InvoiceState = Invoice.InvoiceState;
 import { TxBroadcastResult } from '@stacks/transactions';
-import { getInfo, incrementNonce, querySip10SwapValuesFromTx, querySwapValuesFromTx } from '../wallet/stacks/StacksUtils';
+import { getInfo, incrementNonce, querySip10SwapValuesFromTx, querySwapValuesFromTx, sponsorTx } from '../wallet/stacks/StacksUtils';
 import SIP10WalletProvider from '../wallet/providers/SIP10WalletProvider';
 
 // import mempoolJS from "@mempool/mempool.js";
@@ -911,6 +911,14 @@ class SwapNursery extends EventEmitter {
       this.logger.error(`swapnursery.741 tx.sent ${reverseSwap} ${transactionHash}`);
       await this.lock.acquire(SwapNursery.reverseSwapLock, async () => {
         this.emit('transaction', reverseSwap, transactionHash, true, true);
+
+        // check if this is a presigned sponsored reverse swap - broadcast it
+        if(reverseSwap.minerFeeInvoicePreimage && reverseSwap.rawTx) {
+          const txId = await sponsorTx(reverseSwap.rawTx, reverseSwap.minerFeeOnchainAmount!);
+          console.log('sponsored tx broadcasted: ', txId);
+
+          this.emit('transaction', reverseSwap, txId, true, true);
+        }
       });
     });
 

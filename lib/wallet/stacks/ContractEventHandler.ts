@@ -296,12 +296,19 @@ class ContractEventHandler extends EventEmitter {
     let refundFound = false;
     let txamount = 0;
     let hashvalue = '';
-    const txData = await getTx(txid);
+
+    let txData;
+    try {
+      txData = await getTx(txid);
+    } catch(error) {
+      console.log('ceh.303 checkTx error ', error);
+    }
+
 
     if(!txData.tx_status || txData.tx_status !== 'success' || txData.tx_type !== 'contract_call'){
       console.log('contracteventhandler.302 checkTx not success ', txData.tx_id);
       return;
-    }    
+    }
 
     txData.events.forEach(element => {
       // console.log("txData element: ", JSON.stringify(element));
