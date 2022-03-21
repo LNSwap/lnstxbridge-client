@@ -1,3 +1,10 @@
+## 1.1.0-beta (2022-03-20)
+
+### Features
+
+* support optimized contracts - stxswap_v10 & sip10swap_v3
+
+
 ## [2.4.3-beta](https://github.com/BoltzExchange/boltz-backend/compare/v2.4.2...v2.4.3-beta) (2020-11-19)
 
 
