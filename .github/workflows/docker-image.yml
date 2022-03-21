@@ -15,9 +15,15 @@ jobs:
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d-%H-%M')"
+
       -
         name: Checkout
         uses: actions/checkout@v2
+
+      - name: Get current package version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.1.0
+
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -39,4 +45,4 @@ jobs:
           push: true
           tags: |
             pseudozach/lnstxbridge-client:latest
-            pseudozach/lnstxbridge-client:${{ steps.date.outputs.date }}
+            pseudozach/lnstxbridge-client:${{ steps.package-version.outputs.current-version }}

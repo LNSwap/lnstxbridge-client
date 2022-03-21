@@ -306,7 +306,6 @@ export const getPubkeyHashFunction = (outputType: OutputType): (
 
     case OutputType.Taproot:
       throw new Error('TAPROOT NOT SUPPORTED');
-      
   }
 };
 

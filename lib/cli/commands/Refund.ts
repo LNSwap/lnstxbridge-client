@@ -27,9 +27,9 @@ export const handler = (argv: Arguments<any>): void => {
   const transaction = Transaction.fromHex(argv.rawTransaction);
   const swapOutput = detectSwap(redeemScript, transaction)!;
 
-  console.log('refund constructRefundTransaction ', 
-    swapOutput, transaction.getHash(), 
-    address.toOutputScript(argv.destinationAddress, 
+  console.log('refund constructRefundTransaction ',
+    swapOutput, transaction.getHash(),
+    address.toOutputScript(argv.destinationAddress,
     network));
 
   const refundTransaction = constructRefundTransaction(

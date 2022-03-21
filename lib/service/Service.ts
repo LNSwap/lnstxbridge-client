@@ -54,6 +54,7 @@ import {
   mapToObject,
   reverseBuffer,
   splitPairId,
+  stringify,
 } from '../Utils';
 
 import Balancer from './Balancer';
@@ -665,11 +666,11 @@ class Service {
     const currency = this.getCurrency('STX');
 
     if (currency.stacksClient === undefined) {
-      throw new Error('stacksClient not found')
+      throw new Error('stacksClient not found');
     }
 
-    let reverseSwap: ReverseSwap | null | undefined;
-    reverseSwap = await this.swapManager.reverseSwapRepository.getReverseSwap({
+    // let reverseSwap: ReverseSwap | null | undefined;
+    const reverseSwap = await this.swapManager.reverseSwapRepository.getReverseSwap({
       id: {
         [Op.eq]: id,
       },
@@ -679,12 +680,17 @@ class Service {
       throw new Error(`Reverse swap ${id} not found`);
     }
 
-    if(!reverseSwap.minerFeeInvoice) {
-      throw new Error(`Reverse swap is not prepaid`);
+    if(!reverseSwap.minerFeeInvoice || !reverseSwap.minerFeeInvoicePreimage) {
+      throw new Error('Reverse swap is not prepaid');
     }
 
     if(reverseSwap.status !== SwapUpdateEvent.TransactionConfirmed) {
-      throw new Error(`Reverse swap is not in correct status`);
+      // throw new Error(`Reverse swap is not in correct status`);
+
+      // receive pre-signed tx and save it to broadcast it later.
+      this.logger.verbose(`service.691 broadcastsponsored setReverseSwapRawTx ${id}, ${reverseSwap.status}, ${tx}`);
+      await this.swapManager.reverseSwapRepository.setReverseSwapRawTx(reverseSwap, tx);
+      return 'txsaved';
     }
 
     // sponsor and broadcast tx
@@ -1799,10 +1805,10 @@ class Service {
           url: this.providerUrl,
           pairs: mapToObject(dbPairs.pairs),
         });
-        console.log('service.1795 joinAggregator response: ', response.data);
+        this.logger.verbose(`service.1795 joinAggregator response: ${stringify(response.data)}`);
         if(response.data.result) clearInterval(interval);
       } catch (error) {
-        console.log('service.1781 joinAggregator error: ', error.message);
+        this.logger.error(`service.1781 joinAggregator error: ${error.message}`);
       }
     }, 60000);
 
@@ -1821,7 +1827,7 @@ class Service {
         id: message.transaction?.id,
         hex: message.transaction?.hex,
       }
-    })
+    });
   }
 
   // // allow client to check status of a swap

@@ -224,7 +224,7 @@ class SwapManager {
         otherChainTip = await chainTipRepository.findOrCreateTip(sendingCurrency.symbol, 0);
       }
       asTimeoutBlockHeight = otherChainTip.height + args.timeoutBlockDelta;
-      console.log('swapmanager.222 sendingchainTip ', sendingCurrency.symbol, otherChainTip, asTimeoutBlockHeight);
+      console.log('swapmanager.222 sendingchainTip otherchain astimeoutblockheight ', sendingCurrency.symbol, otherChainTip.symbol, asTimeoutBlockHeight);
       // it works because stx blocktime = btc blocktime
 
       const { keys, index } = receivingCurrency.wallet.getNewKeys();

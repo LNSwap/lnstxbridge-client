@@ -103,6 +103,13 @@ class ReverseSwapRepository {
     });
   }
 
+  public setReverseSwapRawTx = (reverseSwap: ReverseSwap, rawTx: string): Promise<ReverseSwap> => {
+    console.log('reverseswaprepository.107 update: '+ JSON.stringify(reverseSwap), rawTx);
+    return reverseSwap.update({
+      rawTx,
+    });
+  }
+
   public dropTable = (): Promise<void> => {
     return ReverseSwap.drop();
   }
