@@ -1814,7 +1814,7 @@ class Service {
           const totalBalance = balance.getWalletBalance()!.getTotalBalance();
           console.log('symbol, totalBalance ', symbol, totalBalance);
           if(symbol === 'BTC') onchainBalance = totalBalance;
-          if(symbol === 'STX') StxBalance = totalBalance;
+          if(symbol === 'STX') StxBalance = parseInt(totalBalance+'');
           // if(symbol === 'USDA') UsdaBalance = totalBalance;
           const lightningBalance = balance.getLightningBalance();
           if(lightningBalance) {
