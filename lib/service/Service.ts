@@ -1791,22 +1791,57 @@ class Service {
   private joinAggregator = async () => {
     // try to join aggregator every 60 seconds until successful
     // continue joining to update the rates/fees
-    const interval = setInterval(async () => {
+    // const interval =
+    setInterval(async () => {
       try {
         const stacksAddress = getStacksNetwork().signerAddress;
         const currency = this.getCurrency('BTC');
         const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
         // const dbPairs = await this.pairRepository.getPairs();
         const dbPairs = this.getPairs();
+
+        // get onchain/LN/STX balance - cap with configured values
+        const balances = (await this.getBalance()).getBalancesMap();
+        // console.log('balances ', balances);
+
+        let localLNBalance = 0;
+        let remoteLNBalance = 0;
+        let onchainBalance = 0;
+        let StxBalance = 0;
+        // let UsdaBalance = 0;
+        balances.forEach((balance: Balance, symbol: string) => {
+          // console.log('balance, symbol ', balance, symbol);
+          const totalBalance = balance.getWalletBalance()!.getTotalBalance();
+          console.log('symbol, totalBalance ', symbol, totalBalance);
+          if(symbol === 'BTC') onchainBalance = totalBalance;
+          if(symbol === 'STX') StxBalance = totalBalance;
+          // if(symbol === 'USDA') UsdaBalance = totalBalance;
+          const lightningBalance = balance.getLightningBalance();
+          if(lightningBalance) {
+            localLNBalance = lightningBalance.getLocalBalance();
+            remoteLNBalance = lightningBalance.getRemoteBalance();
+            // console.log('local lightningBalance', localLNBalance);
+            // console.log('remote lightningBalance ', remoteLNBalance);
+          }
+        });
+
+        // cap the broadcasted values to configured max in boltz.conf
+        // leave this to aggregator for now
+
         // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
           stacksAddress,
           nodeId,
           url: this.providerUrl,
           pairs: mapToObject(dbPairs.pairs),
+          localLNBalance,
+          remoteLNBalance,
+          onchainBalance,
+          StxBalance,
         });
         this.logger.verbose(`service.1795 joinAggregator response: ${stringify(response.data)}`);
-        if(response.data.result) clearInterval(interval);
+        // client should always send updated join messages to ensure liveness
+        // if(response.data.result) clearInterval(interval);
       } catch (error) {
         this.logger.error(`service.1781 joinAggregator error: ${error.message}`);
       }
@@ -1842,7 +1877,7 @@ class Service {
 
   private startNFTListener = () => {
     if(!this.serviceInvoiceListener) {
-      this.logger.verbose(`s.1675 startNFTListener starting serviceInvoiceListener`);
+      this.logger.verbose('s.1675 startNFTListener starting serviceInvoiceListener');
 
       const currency = this.getCurrency('BTC');
       this.serviceInvoiceListener = currency.lndClient!.on('invoice.settled', async (settledInvoice: string) => {
@@ -1932,7 +1967,7 @@ class Service {
       return result;
     } catch (error) {
       this.logger.error(`service.2128 getAdminBalancerBalances error: ${error.message}`);
-      return `Unable to get exchange balances`;
+      return 'Unable to get exchange balances';
     }
   }
 
