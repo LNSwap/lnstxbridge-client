@@ -241,7 +241,7 @@ class Config {
       dbpath,
       logpath,
 
-      apiVersion: '1.1.0',
+      apiVersion: '1.1.1',
       datadir: this.dataDir,
       loglevel: this.getDefaultLogLevel(),
 
