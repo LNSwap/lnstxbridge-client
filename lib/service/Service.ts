@@ -19,7 +19,8 @@ import TimeoutDeltaProvider from './TimeoutDeltaProvider';
 import { Network } from '../wallet/ethereum/EthereumManager';
 import RateProvider, { PairType } from '../rates/RateProvider';
 import { getGasPrice } from '../wallet/ethereum/EthereumUtils';
-import { calculateStxOutTx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, mintNFTforUser, sponsorTx } from '../wallet/stacks/StacksUtils';
+// mintNFTforUser
+import { calculateStxOutTx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, sponsorTx } from '../wallet/stacks/StacksUtils';
 import WalletManager, { Currency } from '../wallet/WalletManager';
 import SwapManager, { ChannelCreationInfo } from '../swap/SwapManager';
 // etherDecimals, ethereumPrepayMinerFeeGasLimit,
@@ -69,7 +70,7 @@ import Balancer from './Balancer';
 require('events').EventEmitter.defaultMaxListeners = 100;
 
 import axios from 'axios';
-import { setConfig } from '../../lib/consts/Utils';
+import { getConfig, setConfig } from '../../lib/consts/Utils';
 import ReverseSwap from '../db/models/ReverseSwap';
 
 type LndNodeInfo = {
@@ -96,7 +97,7 @@ class Service {
   private static MinInboundLiquidity = 10;
   private static MaxInboundLiquidity = 50;
 
-  private serviceInvoiceListener;
+  // private serviceInvoiceListener;
 
   private aggregatorUrl: string;
   private providerUrl: string;
@@ -184,7 +185,7 @@ class Service {
         this.logger.verbose(`Added pair to database: ${id}`);
       }
     }
-    
+
     this.logger.verbose('Updated pairs in the database');
 
     this.timeoutDeltaProvider.init(configPairs);
@@ -192,7 +193,7 @@ class Service {
     this.rateProvider.feeProvider.init(configPairs);
     await this.rateProvider.init(configPairs);
 
-    this.startNFTListener();
+    // this.startNFTListener();
 
     this.joinAggregator();
   }
@@ -441,7 +442,7 @@ class Service {
     //   // regtest
     //   return await currency.chainClient.getRawTransaction(transactionHash);
     // }
-    
+
     return await currency.chainClient.getRawTransaction(transactionHash);
   }
 
@@ -841,7 +842,7 @@ class Service {
       if (expectedAmount < response.submarineSwap.invoiceAmount/10**8) {
         console.log('s.733 VERIFICATION FAILED expectedAmount (user will lock) vs invoiceAmount (operator will pay) ', expectedAmount, response.submarineSwap.invoiceAmount/10**8);
         throw Errors.WRONG_RATE()
-      }      
+      }
 
       // acceptZeroConf = true;
       bip21 = encodeBip21(
@@ -1058,7 +1059,7 @@ class Service {
       invoiceAmount = this.calculateOnchainAmount(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
       console.log('s.784 requestedAmount, onchainAmount, invoiceAmount', requestedAmount, onchainAmount, invoiceAmount);
 
-      
+
 
       // let originvoiceAmount = this.calculateInvoiceAmount(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
       // invoiceAmountAS = this.calculateInvoiceAmountAS(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
@@ -1074,7 +1075,7 @@ class Service {
       // if (this.catchRates((requestedAmount*rate)/10**6, invoiceAmount/10**8)){
       //   throw Errors.WRONG_RATE();
       // }
-      
+
       console.log('s.902 getManualRates: ', {
         onchainAmount: swap.onchainAmount,
         submarineSwap: {
@@ -1103,11 +1104,11 @@ class Service {
    public catchRates = (operatorSide: number, userSide: number): boolean => {
     // operatorSide = requestedAmount*rate - lnswap is sending this
     // userSide = invoiceAmount calculated in backend - lnswap is receiving this
-    
+
     // Accept spread due to fees
     if (operatorSide*1.01 > userSide ) {
       console.log('s.940 caught rate issue');
-      // 
+      //
       // || amountOne < amountTwo*0.97
       // throw Errors.WRONG_RATE();
       return true;
@@ -1488,7 +1489,7 @@ class Service {
         prepayMinerFeeInvoiceAmount = Math.ceil(prepayMinerFeeOnchainAmount * receivingAmountRate * 10**8); //convert to sats
         // service.1397 prepayMinerFeeOnchainAmount prepayMinerFeeInvoiceAmount receivingAmountRate sendingAmountRate 87025 5 0.00005008000000000001 1
         console.log('service.1397 prepayMinerFeeOnchainAmount prepayMinerFeeInvoiceAmount receivingAmountRate sendingAmountRate', prepayMinerFeeOnchainAmount, prepayMinerFeeInvoiceAmount, receivingAmountRate, sendingAmountRate);
-        
+
         // If the invoice amount was specified, the onchain and hold invoice amounts need to be adjusted
         if (invoiceAmountDefined) {
           onchainAmount -= Math.ceil(prepayMinerFeeOnchainAmount * sendingAmountRate);
@@ -1610,16 +1611,16 @@ class Service {
 
     if(stxAmount < 0) {
       throw Errors.MINT_COST_MISMATCH();
-    } 
+    }
 
     // check contract signature to see how much it would cost to mint
     // find a previous call of the same function and add up stx transfers of that call
     const mintCostStx = stxAmount * 10**6; // 10000000;
     const calcMintCostStx = await calculateStxOutTx(nftAddress, contractSignature!);
     if(calcMintCostStx && calcMintCostStx > mintCostStx) {
-      this.logger.error(`s.1492 calcMintCostStx issue ${calcMintCostStx} > ${mintCostStx}`);  
+      this.logger.error(`s.1492 calcMintCostStx issue ${calcMintCostStx} > ${mintCostStx}`);
       throw Errors.MINT_COST_MISMATCH();
-    } 
+    }
     // this.logger.verbose(`s.1484 mintCostStx ${mintCostStx}`);
 
     // TODO: maybe add whitelisted NFT contracts to avoid issues?
@@ -1791,24 +1792,60 @@ class Service {
   private joinAggregator = async () => {
     // try to join aggregator every 60 seconds until successful
     // continue joining to update the rates/fees
-    const interval = setInterval(async () => {
+    // const interval =
+    setInterval(async () => {
       try {
         const stacksAddress = getStacksNetwork().signerAddress;
         const currency = this.getCurrency('BTC');
         const nodeId = (await currency.lndClient!.getInfo()).identityPubkey;
         // const dbPairs = await this.pairRepository.getPairs();
         const dbPairs = this.getPairs();
+
+        // get onchain/LN/STX balance - cap with configured values
+        const balances = (await this.getBalance()).getBalancesMap();
+        // console.log('balances ', balances);
+
+        let localLNBalance = 0;
+        let remoteLNBalance = 0;
+        let onchainBalance = 0;
+        let StxBalance = 0;
+        // let UsdaBalance = 0;
+        balances.forEach((balance: Balance, symbol: string) => {
+          // console.log('balance, symbol ', balance, symbol);
+          const totalBalance = balance.getWalletBalance()!.getTotalBalance();
+          console.log('symbol, totalBalance ', symbol, totalBalance);
+          if(symbol === 'BTC') onchainBalance = totalBalance;
+          if(symbol === 'STX') StxBalance = parseInt(totalBalance+'');
+          // if(symbol === 'USDA') UsdaBalance = totalBalance;
+          const lightningBalance = balance.getLightningBalance();
+          if(lightningBalance) {
+            localLNBalance = lightningBalance.getLocalBalance();
+            remoteLNBalance = lightningBalance.getRemoteBalance();
+            // console.log('local lightningBalance', localLNBalance);
+            // console.log('remote lightningBalance ', remoteLNBalance);
+          }
+        });
+
+        // cap the broadcasted values to configured max in boltz.conf
+        // leave this to aggregator for now
+
         // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
+          apiVersion: getConfig().apiVersion,
           stacksAddress,
           nodeId,
           url: this.providerUrl,
           pairs: mapToObject(dbPairs.pairs),
+          localLNBalance,
+          remoteLNBalance,
+          onchainBalance,
+          StxBalance,
         });
         this.logger.verbose(`service.1795 joinAggregator response: ${stringify(response.data)}`);
-        if(response.data.result) clearInterval(interval);
+        // client should always send updated join messages to ensure liveness
+        // if(response.data.result) clearInterval(interval);
       } catch (error) {
-        this.logger.error(`service.1781 joinAggregator error: ${error.message}`);
+        this.logger.error(`service.1781 joinAggregator error: ${error.message} ${error.response?.data?.error}`);
       }
     }, 60000);
 
@@ -1840,69 +1877,69 @@ class Service {
   //   console.log('service.1804 getlocked response.data ', response.data)
   // }
 
-  private startNFTListener = () => {
-    if(!this.serviceInvoiceListener) {
-      this.logger.verbose(`s.1675 startNFTListener starting serviceInvoiceListener`);
+  // private startNFTListener = () => {
+  //   if(!this.serviceInvoiceListener) {
+  //     this.logger.verbose('s.1675 startNFTListener starting serviceInvoiceListener');
 
-      const currency = this.getCurrency('BTC');
-      this.serviceInvoiceListener = currency.lndClient!.on('invoice.settled', async (settledInvoice: string) => {
-        this.logger.verbose(`s.1522 got invoice.settled from lndclient for invoice ${settledInvoice}`);
+  //     const currency = this.getCurrency('BTC');
+  //     this.serviceInvoiceListener = currency.lndClient!.on('invoice.settled', async (settledInvoice: string) => {
+  //       this.logger.verbose(`s.1522 got invoice.settled from lndclient for invoice ${settledInvoice}`);
 
-        const directSwap = await this.directSwapRepository.getSwap({
-          invoice: {
-            [Op.eq]: settledInvoice,
-          },
-          status: {
-            [Op.eq]: SwapUpdateEvent.SwapCreated,
-          },
-        });
+  //       const directSwap = await this.directSwapRepository.getSwap({
+  //         invoice: {
+  //           [Op.eq]: settledInvoice,
+  //         },
+  //         status: {
+  //           [Op.eq]: SwapUpdateEvent.SwapCreated,
+  //         },
+  //       });
 
-        if(directSwap) {
-          console.log('s.1555 found directSwap id ', directSwap.id);
-          const txId = await mintNFTforUser(directSwap.nftAddress, directSwap.contractSignature!, directSwap.userAddress, directSwap.mintCostStx!);
-          if (!txId.includes('error')) {
-            await this.directSwapRepository.setSwapStatus(directSwap, 'nft.minted', undefined, txId);
-            this.logger.verbose(`s.1533 directSwap ${directSwap.id} updated with txId ${txId}`);
-            this.eventHandler.emitSwapNftMinted(directSwap.id, txId);
-          } 
-          if (txId.includes('error')) {
-            this.logger.error(`s.1561 directSwap ${directSwap.id} failed with error ${txId}`);
-            await this.directSwapRepository.setSwapStatus(directSwap, 'transaction.failed', txId, txId);
-            this.eventHandler.emitSwapNftMintFailed(directSwap.id, txId);
-          }
+  //       if(directSwap) {
+  //         console.log('s.1555 found directSwap id ', directSwap.id);
+  //         const txId = await mintNFTforUser(directSwap.nftAddress, directSwap.contractSignature!, directSwap.userAddress, directSwap.mintCostStx!);
+  //         if (!txId.includes('error')) {
+  //           await this.directSwapRepository.setSwapStatus(directSwap, 'nft.minted', undefined, txId);
+  //           this.logger.verbose(`s.1533 directSwap ${directSwap.id} updated with txId ${txId}`);
+  //           this.eventHandler.emitSwapNftMinted(directSwap.id, txId);
+  //         }
+  //         if (txId.includes('error')) {
+  //           this.logger.error(`s.1561 directSwap ${directSwap.id} failed with error ${txId}`);
+  //           await this.directSwapRepository.setSwapStatus(directSwap, 'transaction.failed', txId, txId);
+  //           this.eventHandler.emitSwapNftMintFailed(directSwap.id, txId);
+  //         }
 
-        }
-        //  else {
-        //   console.log(`s.1557 no directSwap found for ${settledInvoice}`);
-        // }
+  //       }
+  //       //  else {
+  //       //   console.log(`s.1557 no directSwap found for ${settledInvoice}`);
+  //       // }
 
-        // old method
-        // if (settledInvoice === invoice!.paymentRequest) {
-        //   const txId = await mintNFTforUser(nftAddress, contractSignature!, userAddress, mintCostStx)
-        //   if(txId == 'error') {
-        //     this.logger.error(`s.1546 mintNFTforUser errored and stopped`);
-        //     // return;
-        //   }
-        //   const directSwap = await this.directSwapRepository.getSwap({
-        //     id: {
-        //       [Op.eq]: id,
-        //     }
-        //   });
+  //       // old method
+  //       // if (settledInvoice === invoice!.paymentRequest) {
+  //       //   const txId = await mintNFTforUser(nftAddress, contractSignature!, userAddress, mintCostStx)
+  //       //   if(txId == 'error') {
+  //       //     this.logger.error(`s.1546 mintNFTforUser errored and stopped`);
+  //       //     // return;
+  //       //   }
+  //       //   const directSwap = await this.directSwapRepository.getSwap({
+  //       //     id: {
+  //       //       [Op.eq]: id,
+  //       //     }
+  //       //   });
 
-        //   if (directSwap && !txId.includes('error')) {
-        //     await this.directSwapRepository.setSwapStatus(directSwap, 'nft.minted', undefined, txId);
-        //     this.logger.verbose(`s.1533 directSwap ${id} updated with txId ${txId}`);
-        //     this.eventHandler.emitSwapNftMinted(id, txId);
-        //   } 
-        //   if (directSwap && txId.includes('error')) {
-        //     this.logger.error(`s.1561 directSwap ${id} failed with error ${txId}`);
-        //     await this.directSwapRepository.setSwapStatus(directSwap, 'transaction.failed', txId, txId);
-        //     this.eventHandler.emitSwapNftMintFailed(id, txId);
-        //   }
-        // }
-      });
-    }
-  }
+  //       //   if (directSwap && !txId.includes('error')) {
+  //       //     await this.directSwapRepository.setSwapStatus(directSwap, 'nft.minted', undefined, txId);
+  //       //     this.logger.verbose(`s.1533 directSwap ${id} updated with txId ${txId}`);
+  //       //     this.eventHandler.emitSwapNftMinted(id, txId);
+  //       //   }
+  //       //   if (directSwap && txId.includes('error')) {
+  //       //     this.logger.error(`s.1561 directSwap ${id} failed with error ${txId}`);
+  //       //     await this.directSwapRepository.setSwapStatus(directSwap, 'transaction.failed', txId, txId);
+  //       //     this.eventHandler.emitSwapNftMintFailed(id, txId);
+  //       //   }
+  //       // }
+  //     });
+  //   }
+  // }
 
   // admin dashboard
   public getAdminSwaps = async (): Promise<Swap[]> => {
@@ -1932,7 +1969,7 @@ class Service {
       return result;
     } catch (error) {
       this.logger.error(`service.2128 getAdminBalancerBalances error: ${error.message}`);
-      return `Unable to get exchange balances`;
+      return 'Unable to get exchange balances';
     }
   }
 
@@ -1965,7 +2002,7 @@ class Service {
 
   public getAdminBalanceOnchain = async (): Promise<string> => {
     const balances = (await this.getBalance()).getBalancesMap();
-    let balanceOnchain = ''
+    let balanceOnchain = '';
     balances.forEach((balance: Balance, symbol: string) => {
       if(symbol === 'BTC')
       balanceOnchain = `${balance.getWalletBalance()!.getTotalBalance()}`;
@@ -1976,10 +2013,10 @@ class Service {
   public getAdminBalanceStacks = async (): Promise<{walletName: string, value: string, address: string}[]> => {
     const data = await getAddressAllBalances();
     const signerAddress = (await getStacksNetwork()).signerAddress;
-    let respArray: {walletName: string, value: string, address: string}[] = []
+    let respArray: {walletName: string, value: string, address: string}[] = [];
     Object.keys(data).forEach((key) => {
       respArray.push({walletName: key, value: data[key], address: signerAddress});
-    })
+    });
     return respArray;
   }
 

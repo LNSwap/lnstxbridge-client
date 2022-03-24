@@ -165,6 +165,7 @@ type DashboardConfig = {
 };
 
 type ConfigType = {
+  apiVersion?: string;
   datadir: string;
 
   configpath: string;
@@ -240,6 +241,7 @@ class Config {
       dbpath,
       logpath,
 
+      apiVersion: '1.1.1',
       datadir: this.dataDir,
       loglevel: this.getDefaultLogLevel(),
 
@@ -250,7 +252,7 @@ class Config {
 
       aggregatorUrl: 'http://localhost:9002',
       providerUrl: 'http://localhost:9008',
-      
+
       api: {
         host: '0.0.0.0',
         port: Config.defaultPort,
