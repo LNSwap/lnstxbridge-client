@@ -14,7 +14,7 @@ import { decodeInvoice, formatError, getChainCurrency, getHexBuffer, splitPairId
 class Migration {
   private versionRepository: DatabaseVersionRepository;
 
-  private static latestSchemaVersion = 3;
+  private static latestSchemaVersion = 4;
 
   constructor(private logger: Logger, private sequelize: Sequelize) {
     this.versionRepository = new DatabaseVersionRepository();
@@ -32,6 +32,8 @@ class Migration {
       await this.versionRepository.createVersion(Migration.latestSchemaVersion);
       return;
     }
+
+    this.logger.verbose(`migration.36 versionRow ${versionRow.version} vs latestSchemaVersion ${Migration.latestSchemaVersion}`);
 
     if (versionRow.version === Migration.latestSchemaVersion) {
       this.logger.verbose(`Database has latest schema version ${Migration.latestSchemaVersion}`);
@@ -159,6 +161,14 @@ class Migration {
             allowNull: true,
           },
         );
+
+        await this.finishMigration(versionRow.version, currencies);
+        break;
+
+      // Database schema version 3 adds support for rawTx for clients to support pre-signed sponsoredtx
+      case 3:
+        this.logUpdatingTable('reverseSwaps');
+        await this.sequelize.query('ALTER TABLE reverseSwaps ADD rawTx VARCHAR(1255)');
 
         await this.finishMigration(versionRow.version, currencies);
         break;
