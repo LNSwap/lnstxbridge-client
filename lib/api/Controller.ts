@@ -7,9 +7,10 @@ import SwapNursery from '../swap/SwapNursery';
 // import ServiceErrors from '../service/Errors';
 import { SwapUpdate } from '../service/EventHandler';
 import { SwapType, SwapUpdateEvent } from '../consts/Enums';
-import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify, parseTomlConfig, saveTomlConfig } from '../Utils';
+import { getChainCurrency, getHexBuffer, getVersion, mapToObject, splitPairId, stringify, parseTomlConfig, saveTomlConfig, getServiceDataDir } from '../Utils';
 import Config from '../Config';
 import path from 'path';
+import fs from 'fs';
 
 type ApiArgument = {
   name: string,
@@ -685,7 +686,7 @@ class Controller {
     const data = await this.service.getAdminBalanceStacks();
     this.successResponse(res, data);
   }
-  
+
   public getAdminConfiguration = async (req: Request, res: Response): Promise<void> => {
     const authHeader = req.headers['authorization'];
     if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
@@ -693,7 +694,7 @@ class Controller {
       return;
     }
     // console.log('controller.694: ', Config.defaultDataDir, Config.defaultConfigPath, path.join(Config.defaultDataDir, Config.defaultConfigPath));
-    const data = parseTomlConfig(path.join(Config.defaultDataDir, Config.defaultConfigPath))
+    const data = parseTomlConfig(path.join(Config.defaultDataDir, Config.defaultConfigPath));
     // console.log('controller.803 parseTomlConfig: ', data);
     this.successResponse(res, data);
   }
@@ -708,7 +709,7 @@ class Controller {
     const { config } = this.validateRequest(req.body, [
       { name: 'config', type: 'object' },
     ]);
-    const data = saveTomlConfig(config)
+    const data = saveTomlConfig(config);
     console.log('controller.705 saveTomlConfig: ', data);
     this.successResponse(res, data);
   }
@@ -720,17 +721,32 @@ class Controller {
       return;
     }
     setTimeout(function () {
-        process.on("exit", function () {
-            require("child_process").spawn(process.argv.shift(), process.argv, {
+        process.on('exit', function () {
+            require('child_process').spawn(process.argv.shift(), process.argv, {
                 cwd: process.cwd(),
                 detached : true,
-                stdio: "inherit"
+                stdio: 'inherit'
             });
         });
         console.log('controller.729 restarting the app...');
         process.exit();
     }, 5000);
-    this.successResponse(res, "OK");
+    this.successResponse(res, 'OK');
+  }
+
+  public getAdminMnemonic = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    let data = '';
+    const filename = path.join(getServiceDataDir('lnstx-client'), Config.defaultMnemonicPath);
+    if (fs.existsSync(filename)) {
+      data = fs.readFileSync(filename, 'utf-8').trim();
+    }
+    console.log('controller.748 filename, data: ', filename, data);
+    this.successResponse(res, data);
   }
 
 }
