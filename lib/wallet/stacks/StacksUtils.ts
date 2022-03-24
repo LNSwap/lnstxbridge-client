@@ -272,6 +272,10 @@ export const getAccountNonce = async (initAddress?: string) => {
       console.log('stacksutils.258 getAccountNonce found missing nonces setting to min ', min);
       nonce = min;
     }
+    if (response.data.last_executed_tx_nonce === null) {
+      console.log('stacksutils.276 getAccountNonce last_executed_tx_nonce null: ', response.data.last_executed_tx_nonce);
+      nonce = 0;
+    }
     return response.data;
   } catch (e) {
     console.log('getAccountNonce error: ', e);
