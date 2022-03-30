@@ -72,7 +72,7 @@ read -e -p "LND Node GRPC Port [$DEFAULT_LND_GRPC_PORT]: " LND_GRPC_PORT
 LND_GRPC_PORT="${LND_GRPC_PORT:-${DEFAULT_LND_GRPC_PORT}}"
 
 DEFAULT_APP_PASSWORD="changeme!!!"
-read -e -p "LN-STX Bridge Admin Dashboard Password [$DEFAULT_APP_PASSWORD]: " APP_PASSWORD
+read -e -p "LN-STX Client Admin Dashboard Password [$DEFAULT_APP_PASSWORD]: " APP_PASSWORD
 APP_PASSWORD="${APP_PASSWORD:-${DEFAULT_APP_PASSWORD}}"
 
 # use public ipv4 or create hidden service
@@ -80,7 +80,7 @@ echo -e "\nDo you have an IPv4 address that this server is reachable from or is 
 DEFAULT_ACCESS="tor"
 read -e -p "ip/tor: " access
 access="${access:-${DEFAULT_ACCESS}}"
-if [ "${access}" != "tor" ] ; then
+if [ "${access}" == "tor" ] ; then
   echo "Creating tor hidden service..."
   echo "HiddenServiceDir /var/lib/tor/lnswap/" >> /etc/tor/torrc
   echo "HiddenServicePort 9008 127.0.0.1:9008" >> /etc/tor/torrc
@@ -91,11 +91,6 @@ if [ "${access}" != "tor" ] ; then
 else
     read -e -p "Enter your server IP: " APP_LNSWAP_API_IP
 fi
-
-DEFAULT_APP_PASSWORD="changeme!!!"
-read -e -p "LN-STX Bridge IP Address [$DEFAULT_APP_PASSWORD]: " APP_PASSWORD
-APP_PASSWORD="${APP_PASSWORD:-${DEFAULT_APP_PASSWORD}}"
-
 
 echo -e "\nInstalling lnstxbridge-client with following environment variables: "
 echo "APP_DATA_DIR: $APP_DATA_DIR"
