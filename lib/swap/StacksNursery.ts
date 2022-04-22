@@ -924,8 +924,8 @@ class StacksNursery extends EventEmitter {
           preimageHash: pendingSwap.preimageHash,
           swapContractAddress: pendingSwap.lockupAddress,
         });
-        console.log('stacksnursery.915 ', pendingSwap.id, response.data);
-        // response will be an array now - find lock? 
+        this.logger.verbose(`stacksnursery.915 checking swap ${pendingSwap.id} ${stringify(response.data)}`);
+        // response will be an array now - find lock?
         let txData = response.data.txData.find((item) => item.event === 'lock');
         if(txData && txData.txId) {
           // got lock - mark it

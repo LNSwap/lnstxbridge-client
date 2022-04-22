@@ -42,7 +42,8 @@ let lockStxCost = 760000;
 let claimStxCost = 760000;
 let refundStxCost = 760000;
 const maxStacksTxFee = 751000;
-console.log('stacksutils.43 setting default lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee ', lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee);
+const minStacksTxFee = 3000; // min fee requested by jamil
+console.log('stacksutils.43 setting default lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee, minStacksTxFee ', lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee, minStacksTxFee);
 
 // const apiConfig = new Configuration({
 //   // fetchApi: fetch,
@@ -271,6 +272,10 @@ export const getAccountNonce = async (initAddress?: string) => {
       const min = Math.min(...response.data.detected_missing_nonces);
       console.log('stacksutils.258 getAccountNonce found missing nonces setting to min ', min);
       nonce = min;
+    }
+    if (response.data.last_executed_tx_nonce === null) {
+      console.log('stacksutils.276 getAccountNonce last_executed_tx_nonce null: ', response.data.last_executed_tx_nonce);
+      nonce = 0;
     }
     return response.data;
   } catch (e) {
@@ -552,7 +557,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
     // console.log('calculateStacksTxFee v2fees: ', v2fee);
 
     // Number(totalfee), // stop using old estimate result which gives ~80k-100k mstx
-    const normalizedFee = Math.min(maxStacksTxFee, Number(v2fee));
+    let normalizedFee = Math.min(maxStacksTxFee, Number(v2fee));
+    normalizedFee = Math.max(normalizedFee, minStacksTxFee);
     if(functionName.includes('lockStx')) {
       lockStxCost = normalizedFee;
     } else if(functionName.includes('claimStx')) {

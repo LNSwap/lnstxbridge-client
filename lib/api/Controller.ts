@@ -151,7 +151,7 @@ class Controller {
   }
 
   public getPairs = (_: Request, res: Response): void => {
-    console.log('controller.297 getPairs ');
+    // console.log('controller.297 getPairs ');
     const data = this.service.getPairs();
 
     this.successResponse(res, {
@@ -219,8 +219,8 @@ class Controller {
       const { id } = this.validateRequest(req.body, [
         { name: 'id', type: 'string' },
       ]);
-
       const response = this.pendingSwapInfos.get(id);
+      this.logger.verbose(`c.224 swapStatus ${id}, ${stringify(response)}`);
 
       if (response) {
         this.successResponse(res, response);
