@@ -42,7 +42,7 @@ let lockStxCost = 760000;
 let claimStxCost = 760000;
 let refundStxCost = 760000;
 const maxStacksTxFee = 751000;
-const minStacksTxFee = 3000; // min fee requested by jamil
+const minStacksTxFee = 5000; // min fee requested by jamil
 console.log('stacksutils.43 setting default lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee, minStacksTxFee ', lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee, minStacksTxFee);
 
 // const apiConfig = new Configuration({
