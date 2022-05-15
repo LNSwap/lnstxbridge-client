@@ -49,7 +49,7 @@ class SIP10WalletProvider implements WalletProviderInterface {
   }
 
   public getBalance = async (): Promise<WalletBalance> => {
-    this.logger.info('sip10walletprovider.25 getbalance');
+    // this.logger.info('sip10walletprovider.25 getbalance');
 
     const contractAddress = this.getTokenAddress().split('.')[0];
     const contractName = this.getTokenAddress().split('.')[1];
@@ -74,7 +74,7 @@ class SIP10WalletProvider implements WalletProviderInterface {
         cvToJSON(sip10balance).value.value
         // await this.token.contract.balanceOf(await this.getAddress()),
       );
-      this.logger.verbose('sip10balance normalized '+ balance);
+      this.logger.verbose('sip10balance normalized ' + this.getTokenAddress() + ' ,' + balance);
       return {
         totalBalance: balance,
         confirmedBalance: balance,
