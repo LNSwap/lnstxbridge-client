@@ -40,6 +40,7 @@ class ContractHandler {
     this.contractAddress = contract.split('.')[0];
     this.contractName = contract.split('.')[1];
 
+    // this is the sip10 swap contract
     this.sip10contractAddress = sip10Contract.split('.')[0];
     this.sip10contractName = sip10Contract.split('.')[1];
     // this.etherSwap = etherSwap;
@@ -421,7 +422,7 @@ class ContractHandler {
     amount = amount.div(etherDecimals).div(100);
     const decimalamount = parseInt(amount.toString(),10);
     // stop doing this  + 1;
-    this.logger.verbose('contracthandler.380 smaller amount: '+ amount + ', '+ decimalamount + ', '+ this.sip10contractAddress);
+    this.logger.verbose('contracthandler.380 smaller amount: '+ amount + ', '+ decimalamount + ', '+ this.sip10contractAddress + ', ' + this.sip10contractName);
     //  + ', ' JSON.stringify(token) +
 
     // Add an optional post condition
@@ -437,16 +438,18 @@ class ContractHandler {
     // this.logger.error("contracthandler.76")
     const postConditions = [
       makeContractSTXPostCondition(
-        this.contractAddress,
-        this.contractName,
+        // this.contractAddress,
+        // this.contractName,
+        this.sip10contractAddress,
+        this.sip10contractName,
         postConditionCode,
         postConditionAmount
       )
     ];
 
-    console.log('contracthandler.403: ',this.contractAddress, this.contractName, postConditionCode, postConditionAmount);
+    // this.contractAddress, this.contractName
+    console.log('contracthandler.403: ',this.sip10contractAddress, this.sip10contractName, postConditionCode, postConditionAmount);
 
-    
     const swapamount = decimalamount.toString(16).split('.')[0] + '';
     const paddedamount = swapamount.padStart(32, '0');
     const tl1 = timeLock.toString(16);
@@ -495,6 +498,7 @@ class ContractHandler {
       anchorMode: AnchorMode.Any,
       // fee: new BigNum(120000),
       nonce: new BigNum(stacksNetworkData.nonce),
+      fee: new BigNum(stacksNetworkData.lockStxCost),
       // onFinish: data => {
       //   console.log('Stacks lock Transaction:', JSON.stringify(data));
       //   incrementNonce();
@@ -694,6 +698,7 @@ class ContractHandler {
         postConditionMode: PostConditionMode.Allow,
         anchorMode: AnchorMode.Any,
         // fee: new BigNum(100000),
+        fee: new BigNum(stacksNetworkData.refundStxCost),
         nonce: new BigNum(stacksNetworkData.nonce),
         // onFinish: data => {
         //   console.log('Stacks refund Transaction:', JSON.stringify(data));
