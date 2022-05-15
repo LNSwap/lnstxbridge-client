@@ -111,12 +111,22 @@ export const getAddressAllBalances = async (initAddress?:string) => {
   const url = `${coreApiUrl}/extended/v1/address/${queryAddress}/balances`;
   // console.log("started getAddressAllBalances ", url);
   const response = await axios.get(url);
-  // console.log("getAddressAllBalances ", response.data, response.data.stx);
-  // console.log("getAddressAllBalances tokens", tokens);
+  const respobj = {STX: response.data.stx.balance};
+
+  // console.log('getAddressAllBalances ft ', response.data.fungible_tokens, response.data.fungible_tokens.length);
+  // console.log('getAddressAllBalances tokens', tokens);
   const usdaContractAddress = tokens.find((item) => item.symbol === 'USDA').contractAddress;
-  let respobj = {STX: response.data.stx.balance};
+  const xusdContractAddress = tokens.find((item) => item.symbol === 'XUSD').contractAddress;
+
+  // Object.keys(response.data.fungible_tokens).forEach((ft) => {
+  //   console.log('ft key/value ', ft);
+  // });
+
+  // make this generic so every new SIP10 is automatically discovered
+  // TODO: Not so easy because contract/asset mapping is not trivial
   if (JSON.stringify(response.data.fungible_tokens).length > 2) {
     respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda'].balance;
+    respobj['XUSD'] = response.data.fungible_tokens[xusdContractAddress+'::wrapped-usd'].balance;
   }
   return respobj;
 
