@@ -496,25 +496,25 @@ class ContractEventHandler extends EventEmitter {
     // });
   // }
 
-  private checkTokenTx = async (txid:string) => {
+  public checkTokenTx = async (txid:string) => {
     let lockFound = false;
     let claimFound = false;
     let refundFound = false;
     let txamount = 0;
     let hashvalue = '';
     const txData = await getTx(txid);
-    txData.events.forEach(element => {
+    txData?.events?.forEach(element => {
       // console.log("checkTokenTx txData element: ", JSON.stringify(element));
         if(element.contract_log && element.contract_log.value.repr.includes('lock')){
-          console.log('found LOCK!');
+          console.log('ceh.509 found LOCK!');
           lockFound = true;
         }
         if(element.contract_log && element.contract_log.value.repr.includes('claim')){
-          console.log('found CLAIM!');
+          console.log('ceh.509 found CLAIM!');
           claimFound = true;
         }
         if(element.contract_log && element.contract_log.value.repr.includes('refund')){
-          console.log('found REFUND!');
+          console.log('ceh.509 found REFUND!');
           refundFound = true;
         }
         // if(element.contract_log

@@ -1900,7 +1900,7 @@ class SwapNursery extends EventEmitter {
     if (swap.asLockupTransactionId) {
       if(swap.contractAddress) {
         if(swap.tokenAddress) {
-          console.log('swapn.1854 refund expired sip10 swap ', swap.id);
+          console.log('swapn.1854 refund expired sip10 swap ', swap.id, swap.tokenAddress);
           this.refundSip10AS(swap, 'USDA');
         } else {
           console.log('swapn.1863 refund expired STX swap ', swap.id);
