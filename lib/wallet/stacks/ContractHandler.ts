@@ -3,7 +3,7 @@ import { EtherSwap } from 'boltz-core/typechain/EtherSwap';
 import { ERC20Swap } from 'boltz-core/typechain/ERC20Swap';
 import Logger from '../../Logger';
 import { getHexString, stringify } from '../../Utils';
-import { getGasPrice, getStacksNetwork } from './StacksUtils';
+import { getGasPrice, getStacksNetwork, removeU } from './StacksUtils';
 import ERC20WalletProvider from '../providers/ERC20WalletProvider';
 import { etherDecimals, ethereumPrepayMinerFeeGasLimit } from '../../consts/Consts';
 
@@ -530,7 +530,7 @@ class ContractHandler {
     if(amount.toString().includes('u')) {
       // optimized
       // ch.168 Claiming u1995070 Stx with preimage 031b251d4e7c77793692e26858963d5b77dfaf56fb67de7a7136a2811f0a6c6a and timelock u180
-      decimalamount = amount.toString().split('u')[1];
+      decimalamount = removeU(amount);
     } else if(!amount.toString().includes('0x') && !amount.toString().includes('.') && amount.toString().length < 32) {
       decimalamount = amount.div(10**12).toNumber();
     } else {
@@ -545,8 +545,9 @@ class ContractHandler {
     } else {
       theTimelock = timeLock;
     }
-    this.logger.verbose('theTimelock: ' + theTimelock);
-    this.logger.verbose('decimalamount: ' + decimalamount);
+    this.logger.verbose('claimToken theTimelock: ' + theTimelock);
+    decimalamount = decimalamount * (10 ** (token.getTokenDecimals() - 6));
+    this.logger.verbose('claimToken decimalamount: ' + decimalamount);
 
     // // const decimalamount = parseInt(amount.toString(),16);
     // this.logger.error('decimalamount: ' + decimalamount);
@@ -591,7 +592,8 @@ class ContractHandler {
     const functionArgs = [
       // bufferCV(Buffer.from('4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a', 'hex')),
       bufferCV(preimage),
-      uintCV(swapamount),
+      // uintCV(swapamount),
+      uintCV(decimalamount),
       // bufferCV(Buffer.from(paddedamount,'hex')),
       // bufferCV(Buffer.from('01','hex')),
       // bufferCV(Buffer.from('01','hex')),
@@ -620,6 +622,7 @@ class ContractHandler {
       postConditionMode: PostConditionMode.Allow,
       // postConditions,
       anchorMode: AnchorMode.Any,
+      fee: new BigNum(stacksNetworkData.claimStxCost),
       nonce: new BigNum(stacksNetworkData.nonce),
       // onFinish: data => {
       //   console.log('Stacks claim Transaction:', JSON.stringify(data));
