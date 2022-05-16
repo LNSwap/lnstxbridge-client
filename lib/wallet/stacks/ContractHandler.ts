@@ -7,7 +7,7 @@ import { getGasPrice, getStacksNetwork } from './StacksUtils';
 import ERC20WalletProvider from '../providers/ERC20WalletProvider';
 import { etherDecimals, ethereumPrepayMinerFeeGasLimit } from '../../consts/Consts';
 
-// makeContractCall, , broadcastTransaction, makeStandardSTXPostCondition
+// makeContractCall, , broadcastTransaction, makeStandardSTXPostCondition, makeContractFungiblePostCondition, createAssetInfo
 import { bufferCV, uintCV, standardPrincipalCV, contractPrincipalCV, AnchorMode, FungibleConditionCode, makeContractSTXPostCondition, PostConditionMode, makeContractCall, broadcastTransaction, TxBroadcastResult } from '@stacks/transactions';
 import SIP10WalletProvider from '../providers/SIP10WalletProvider';
 // import { contractPrincipalCV } from '@blockstack/stacks-transactions';
@@ -419,13 +419,11 @@ class ContractHandler {
     this.logger.debug(`Locking ${amount} sip10 with preimage hash: ${getHexString(preimageHash)} with claimaddress ${claimAddress}`);
     // Locking 1613451070000000000 Stx with preimage hash: 3149e7d4d658ee7e513c63af7d7d395963141252cb43505e1e4a146fbcbe39e1
 
-    amount = amount.div(etherDecimals).div(100);
-    const decimalamount = parseInt(amount.toString(),10);
-    // stop doing this  + 1;
+    // this needs to be done as per token decimal
+    const decimalamount = token.normalizeTokenAmount(amount.div(etherDecimals).toString());
     this.logger.verbose('contracthandler.380 smaller amount: '+ amount + ', '+ decimalamount + ', '+ this.sip10contractAddress + ', ' + this.sip10contractName);
-    //  + ', ' JSON.stringify(token) +
 
-    // Add an optional post condition
+    // TODO: Add an optional post condition
     // See below for details on constructing post conditions
     // const postConditionAddress = this.contractAddress;
     const postConditionCode = FungibleConditionCode.LessEqual;
@@ -435,17 +433,20 @@ class ContractHandler {
     // const postConditions = [
     //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
     // ];
-    // this.logger.error("contracthandler.76")
-    const postConditions = [
-      makeContractSTXPostCondition(
-        // this.contractAddress,
-        // this.contractName,
-        this.sip10contractAddress,
-        this.sip10contractName,
-        postConditionCode,
-        postConditionAmount
-      )
-    ];
+    // const fungibleAssetInfo = createAssetInfo(token.getTokenContractAddress(), token.getTokenContractName(), assetContractName);
+
+    // // this.logger.error("contracthandler.76")
+    // const postConditions = [
+    //   makeContractSTXPostCondition(
+    //   // makeContractFungiblePostCondition(
+    //     // this.contractAddress,
+    //     // this.contractName,
+    //     this.sip10contractAddress,
+    //     this.sip10contractName,
+    //     postConditionCode,
+    //     postConditionAmount
+    //   )
+    // ];
 
     // this.contractAddress, this.contractName
     console.log('contracthandler.403: ',this.sip10contractAddress, this.sip10contractName, postConditionCode, postConditionAmount);
@@ -493,7 +494,7 @@ class ContractHandler {
       senderKey: stacksNetworkData.privateKey,
       // validateWithAbi: true,
       network: stacksNetworkData.stacksNetwork,
-      postConditions,
+      // postConditions,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
       // fee: new BigNum(120000),
@@ -628,10 +629,13 @@ class ContractHandler {
       this.logger.debug(`Refunding ${amount} sip10 with preimage hash: ${getHexString(preimageHash)} with claimaddress ${claimAddress}`);
       // Locking 1613451070000000000 Stx with preimage hash: 3149e7d4d658ee7e513c63af7d7d395963141252cb43505e1e4a146fbcbe39e1
 
-      amount = amount.div(etherDecimals).div(100);
-      // this +1 causes issues when 49 -> 50
-      // removed  + 1
-      const decimalamount = parseInt(amount.toString(),10);
+      // this needs to be done as per token decimal
+      const decimalamount = token.normalizeTokenAmount(amount.div(etherDecimals).toString());
+
+      // amount = amount.div(etherDecimals).div(100);
+      // // this +1 causes issues when 49 -> 50
+      // // removed  + 1
+      // const decimalamount = parseInt(amount.toString(),10);
       this.logger.verbose('contracthandler.581 smaller amount: '+ amount + ', '+ decimalamount);
 
       // Add an optional post condition

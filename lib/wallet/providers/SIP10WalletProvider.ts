@@ -167,7 +167,9 @@ class SIP10WalletProvider implements WalletProviderInterface {
   // }
 
   public normalizeTokenAmount = (amount: string): number => {
-    return (parseInt(amount + '',16) * (10 ** (8 - this.token.decimals))) + 100;
+    // console.log('sip10walletprovider.160 normalizeTokenAmount ', amount);
+    return (parseInt(amount + '') * (10 ** (8 - this.token.decimals)));
+    // return (parseInt(amount + '',16) * (10 ** (8 - this.token.decimals))) + 100;
   }
 }
 
