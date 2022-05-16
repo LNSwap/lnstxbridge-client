@@ -660,7 +660,7 @@ class StacksNursery extends EventEmitter {
       const chainCurrency = getChainCurrency(base, quote, swap.orderSide, false);
       this.logger.debug('sip10swap chainCurrency ' + chainCurrency);
 
-      if (chainCurrency !== 'USDA') {
+      if (chainCurrency !== 'USDA' && chainCurrency !== 'XUSD') {
         return;
       }
 
@@ -722,7 +722,7 @@ class StacksNursery extends EventEmitter {
 
         // 1995138440000000000,
         const bigswapamount = BigNumber.from(swapamount).mul(etherDecimals);
-        this.logger.verbose('swap.expectedAmount, expectedAmount , erc20SwapValues.amount' +swap.expectedAmount+ ', ' + expectedAmount + ', ' + erc20SwapValues.amount);
+        this.logger.verbose('sn.725 swap.expectedAmount, expectedAmount , erc20SwapValues.amount' +swap.expectedAmount+ ', ' + expectedAmount + ', ' + erc20SwapValues.amount);
         // etherSwapValues.amount
         if (expectedAmount.gt(bigswapamount)) {
           this.emit(
