@@ -169,13 +169,13 @@ class ContractHandler {
     claimAddress: string,
     timeLock: number,
   ): Promise<TxBroadcastResult> => {
-    this.logger.debug(`ch.168 Claiming ${amount} Stx with preimage ${getHexString(preimage)} and timelock ${timeLock}`);
+    this.logger.debug(`ch.168 Claiming ${amount} Stx with preimage ${getHexString(preimage)} and timelock ${timeLock} ${claimAddress}`);
     let decimalamount;
     let theTimelock;
 
     // from atomic swap
     // Claiming 000000000000000000000000004c4b40 Stx with preimage cdf07179b2ece93ccb76cd4f6fb2ab1c65621c4988bae4f4de8503e64c1eaf0f and timelock 1123
-    
+
     // need to add a way to handle this as well - happens when coming from attemptsettleswap - invoice.pending
     // Claiming 26101488000000000000 Stx with preimage 7a5227e168a41dc5d311e3eacaa8c9a19de070ab5e258134a02b2cdbaa6e00ee and timelock 44337
     if(amount.toString().includes('u')) {
@@ -202,26 +202,26 @@ class ContractHandler {
     // let smallamount = amount.div(etherDecimals).toNumber();
     // this.logger.error("smallamount: " + smallamount)
 
-    // Add an optional post condition
-    // See below for details on constructing post conditions
-    // const postConditionAddress = this.contractAddress;
-    const postConditionCode = FungibleConditionCode.GreaterEqual;
-    // new BigNum(1000000);
-    const postConditionAmount = new BigNum(decimalamount);
+    // // Add an optional post condition
+    // // See below for details on constructing post conditions
+    // // const postConditionAddress = this.contractAddress;
+    // const postConditionCode = FungibleConditionCode.GreaterEqual;
+    // // new BigNum(1000000);
+    // const postConditionAmount = new BigNum(decimalamount);
+    // // const postConditions = [
+    // //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    // // ];
+
     // const postConditions = [
-    //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    //   makeContractSTXPostCondition(
+    //     this.contractAddress,
+    //     this.contractName,
+    //     postConditionCode,
+    //     postConditionAmount
+    //   )
     // ];
 
-    const postConditions = [
-      makeContractSTXPostCondition(
-        this.contractAddress,
-        this.contractName,
-        postConditionCode,
-        postConditionAmount
-      )
-    ];
-
-    console.log('contracthandler.129 postConditions: ' + postConditions, claimAddress);
+    // console.log('contracthandler.129 postConditions: ' + postConditions, claimAddress);
 
     const swapamount = smallamount.toString(16).split('.')[0] + '';
     const paddedamount = swapamount.padStart(32, '0');
@@ -523,7 +523,7 @@ class ContractHandler {
     claimAddress: string,
     timeLock: number,
   ): Promise<TxBroadcastResult> => {
-    this.logger.debug(`Claiming ${amount} sip10 with preimage ${getHexString(preimage)} and timelock ${timeLock}`);
+    this.logger.debug(`Claiming ${amount} sip10 with preimage ${getHexString(preimage)} and timelock ${timeLock} ${claimAddress}`);
     let decimalamount;
     let theTimelock;
 
@@ -554,36 +554,37 @@ class ContractHandler {
     // let smallamount = amount.div(etherDecimals).toNumber();
     // this.logger.error("smallamount: " + smallamount)
 
-    // Add an optional post condition
-    // See below for details on constructing post conditions
-    // const postConditionAddress = this.contractAddress;
-    const postConditionCode = FungibleConditionCode.GreaterEqual;
-    // new BigNum(1000000);
-    const postConditionAmount = new BigNum(decimalamount);
+    // // Add an optional post condition
+    // // See below for details on constructing post conditions
+    // // const postConditionAddress = this.contractAddress;
+    // const postConditionCode = FungibleConditionCode.GreaterEqual;
+    // // new BigNum(1000000);
+    // const postConditionAmount = new BigNum(decimalamount);
+    // // const postConditions = [
+    // //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    // // ];
+
     // const postConditions = [
-    //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    //   makeContractSTXPostCondition(
+    //     this.contractAddress,
+    //     this.contractName,
+    //     postConditionCode,
+    //     postConditionAmount
+    //   )
     // ];
 
-    const postConditions = [
-      makeContractSTXPostCondition(
-        this.contractAddress,
-        this.contractName,
-        postConditionCode,
-        postConditionAmount
-      )
-    ];
-
-    console.log('contracthandler.129 postConditions: ', postConditions, claimAddress);
+    // console.log('contracthandler.129 postConditions: ', postConditions, claimAddress);
 
     const swapamount = smallamount.toString(16).split('.')[0] + '';
-    const paddedamount = swapamount.padStart(32, '0');
-    const tl1 = timeLock.toString(16);
-    const tl2 = tl1.padStart(32, '0');
+    // const paddedamount = swapamount.padStart(32, '0');
+    // const tl1 = timeLock.toString(16);
+    // const tl2 = tl1.padStart(32, '0');
     // why slice it?! dont slice it
     // const tl3 = tl2.slice(2);
-    const tl3 = tl2;
-    const paddedtimelock = timeLock.toString(16).padStart(32, '0');
-    console.log('contracthandler.586 ', smallamount, swapamount, paddedamount, timeLock, paddedtimelock, tl1, tl2, tl3);
+    // const tl3 = tl2;
+    // const paddedtimelock = timeLock.toString(16).padStart(32, '0');
+    // smallamount, paddedamount,paddedtimelock, tl1, tl2, tl3
+    this.logger.verbose('contracthandler.586 swapamount ' +  swapamount + ', ' + timeLock,);
     // ontracthandler.135  1995106 1e7162 000000000000000000000000001e7162
     // 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea
     // (claimStx (preimage (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16)) (tokenPrincipal <ft-trait>))

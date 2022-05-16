@@ -1687,7 +1687,7 @@ class SwapNursery extends EventEmitter {
   }
 
   private claimSip10 = async (contractHandler: StacksContractHandler, swap: Swap, erc20SwapValues?: ERC20SwapValues, outgoingChannelId?: string, detectedPreimage?: string) => {
-    this.logger.error('swapnursery.1240 claimSip10 triggered');
+    this.logger.verbose('swapnursery.1240 claimSip10 triggered');
 
     // add additional check to see if swap expired before paying the invoice
     // happens when app is restarted on mocknet
