@@ -18,7 +18,7 @@ import { getChainCurrency, getHexString, splitPairId, stringify } from '../Utils
 // import ERC20WalletProvider from '../wallet/providers/ERC20WalletProvider';
 import StacksManager from 'lib/wallet/stacks/StacksManager';
 import { TxBroadcastResult } from '@stacks/transactions';
-import { getStacksNetwork, getTx, incrementNonce } from '../wallet/stacks/StacksUtils';
+import { getStacksNetwork, getTx, incrementNonce, removeU } from '../wallet/stacks/StacksUtils';
 import type { Transaction } from '@stacks/stacks-blockchain-api-types';
 // import { io } from 'socket.io-client';
 // import * as stacks from '@stacks/blockchain-api-client';
@@ -674,7 +674,11 @@ class StacksNursery extends EventEmitter {
 
       this.logger.debug(`Found lockup in SIP10Swap contract for Swap ${swap.id}: ${transactionHash}`);
 
-      const swapamount = (parseInt(erc20SwapValues.amount + '',16) * 100) + 100;
+
+      // const swapamount = (parseInt(erc20SwapValues.amount + '',16) * 100) + 100;
+      let swapamount = parseInt(removeU(erc20SwapValues.amount) + '');
+      if(chainCurrency === 'USDA') swapamount = swapamount * 100;
+
       const normalizedAmount = sip10Wallet.normalizeTokenAmount(erc20SwapValues.amount+'');
       this.logger.verbose('stacksnursery.422 sip10swapvalues.amount, swapamount, normalizedAmount, transactionHash ' + erc20SwapValues.amount + ', ' + swapamount + ', ' + normalizedAmount + ', ' + transactionHash);
 
@@ -707,7 +711,10 @@ class StacksNursery extends EventEmitter {
         return;
       }
 
-      const inttimelock = parseInt(erc20SwapValues.timelock + '',16);
+
+      const inttimelock = parseInt(removeU(erc20SwapValues.timelock+''));
+      this.logger.debug('stacksnursery.710 comparing timelocks '+ erc20SwapValues.timelock + ', ' + swap.timeoutBlockHeight + ' ,' + inttimelock);
+      // const inttimelock = parseInt(erc20SwapValues.timelock + '',16);
       if (inttimelock !== swap.timeoutBlockHeight) {
         this.emit(
           'lockup.failed',
@@ -717,12 +724,13 @@ class StacksNursery extends EventEmitter {
         return;
       }
 
+      this.logger.verbose('sn.723 swap.expectedAmount, expectedAmount , erc20SwapValues.amount ' +swap.expectedAmount + ', ' + erc20SwapValues.amount);
       if (swap.expectedAmount) {
         const expectedAmount = BigNumber.from(swap.expectedAmount).mul(etherDecimals);
-
+        this.logger.verbose('sn.725 swap.expectedAmount, expectedAmount , erc20SwapValues.amount' +swap.expectedAmount+ ', ' + expectedAmount + ', ' + erc20SwapValues.amount);
         // 1995138440000000000,
         const bigswapamount = BigNumber.from(swapamount).mul(etherDecimals);
-        this.logger.verbose('sn.725 swap.expectedAmount, expectedAmount , erc20SwapValues.amount' +swap.expectedAmount+ ', ' + expectedAmount + ', ' + erc20SwapValues.amount);
+
         // etherSwapValues.amount
         if (expectedAmount.gt(bigswapamount)) {
           this.emit(
@@ -845,7 +853,7 @@ class StacksNursery extends EventEmitter {
   // this actually tracks both mempool + confirmed - websocket replacement
   private checkMempoolReverseSwaps = async (height: number) => {
     const mempoolReverseSwaps = await this.reverseSwapRepository.getReverseSwapsMempool(height);
-    this.logger.verbose("stacksnursery.833 mempoolReverseSwaps height " + height + ", " + mempoolReverseSwaps.length)
+    this.logger.verbose('stacksnursery.833 mempoolReverseSwaps height ' + height + ', ' + mempoolReverseSwaps.length);
 
     for (const mempoolReverseSwap of mempoolReverseSwaps) {
       const { base, quote } = splitPairId(mempoolReverseSwap.pair);
@@ -856,7 +864,7 @@ class StacksNursery extends EventEmitter {
 
       if (wallet) {
         // send to checktx that checks if mempool tx succeeded and then emits required events - similar to websocket
-        this.stacksManager.contractEventHandler.checkTx(mempoolReverseSwap.transactionId!)
+        this.stacksManager.contractEventHandler.checkTx(mempoolReverseSwap.transactionId!);
       }
     }
   }
@@ -887,9 +895,14 @@ class StacksNursery extends EventEmitter {
         console.log('stacksnursery.875 checkProviderSwaps ', confirmedReverseSwap.id, response.data);
         // response will be an array now - find claim
         const txData = response.data.txData.find((item) => item.event === 'claim');
+        const swapContract = response.data.txData.find((item) => item.swapContractAddress.includes('sip10swap'));
         if(txData && txData.txId) {
           // got claim - mark it
-          this.stacksManager.contractEventHandler.checkTx(txData.txId);
+          if (swapContract) {
+            this.stacksManager.contractEventHandler.checkTokenTx(txData.txId);
+          } else {
+            this.stacksManager.contractEventHandler.checkTx(txData.txId);
+          }
         }
       }
     }
@@ -927,15 +940,25 @@ class StacksNursery extends EventEmitter {
         this.logger.verbose(`stacksnursery.915 checking swap ${pendingSwap.id} ${stringify(response.data)}`);
         // response will be an array now - find lock?
         let txData = response.data.txData.find((item) => item.event === 'lock');
+        const swapContract = response.data.txData.find((item) => item.swapContractAddress.includes('sip10swap'));
+        console.log('sn.935 got swapContract? ', swapContract);
         if(txData && txData.txId) {
           // got lock - mark it
-          this.stacksManager.contractEventHandler.checkTx(txData.txId);
+          if (swapContract) {
+            this.stacksManager.contractEventHandler.checkTokenTx(txData.txId);
+          } else {
+            this.stacksManager.contractEventHandler.checkTx(txData.txId);
+          }
         }
         // and claim for atomic swaps!
         txData = response.data.txData.find((item) => item.event === 'claim');
         if(txData && txData.txId) {
           // got claim - mark it
-          this.stacksManager.contractEventHandler.checkTx(txData.txId);
+          if (swapContract) {
+            this.stacksManager.contractEventHandler.checkTokenTx(txData.txId);
+          } else {
+            this.stacksManager.contractEventHandler.checkTx(txData.txId);
+          }
         }
       }
     }

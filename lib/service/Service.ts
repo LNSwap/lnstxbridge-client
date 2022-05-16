@@ -1407,7 +1407,7 @@ class Service {
     let baseFee = this.rateProvider.feeProvider.getBaseFee(sendingCurrency.symbol, BaseFeeType.ReverseLockup);
     if(sendingCurrency.symbol === 'STX' || sendingCurrency.symbol === 'USDA') {
       // convert from mstx to boltz default 10**8
-      baseFee = Math.round(baseFee * 100)
+      baseFee = Math.round(baseFee * 100);
     }
     // console.log('service.1375 createreverseswap rate, feePercent, baseFee: ', rate, feePercent, baseFee);
 
