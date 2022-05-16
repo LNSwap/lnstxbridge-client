@@ -197,7 +197,6 @@ class ContractHandler {
       theTimelock = timeLock;
     }
     this.logger.verbose('theTimelock: ' + theTimelock);
-
     this.logger.verbose('decimalamount: ' + decimalamount);
     const smallamount = decimalamount;
     // let smallamount = amount.div(etherDecimals).toNumber();
@@ -525,9 +524,32 @@ class ContractHandler {
     timeLock: number,
   ): Promise<TxBroadcastResult> => {
     this.logger.debug(`Claiming ${amount} sip10 with preimage ${getHexString(preimage)} and timelock ${timeLock}`);
+    let decimalamount;
+    let theTimelock;
 
-    const decimalamount = parseInt(amount.toString(),16);
-    this.logger.error('decimalamount: ' + decimalamount);
+    if(amount.toString().includes('u')) {
+      // optimized
+      // ch.168 Claiming u1995070 Stx with preimage 031b251d4e7c77793692e26858963d5b77dfaf56fb67de7a7136a2811f0a6c6a and timelock u180
+      decimalamount = amount.toString().split('u')[1];
+    } else if(!amount.toString().includes('0x') && !amount.toString().includes('.') && amount.toString().length < 32) {
+      decimalamount = amount.div(10**12).toNumber();
+    } else {
+      // Claiming 0x000000000000000000000000001e81a1 Stx with preimage 6dbd24b9e7d350d13eae95c218eba735e4a87e3a7ec205b9bd83805a37b4be39 and timelock 0x0000000000000000000000000000abe5
+      decimalamount = parseInt(amount.toString(),16);
+    }
+
+    if(timeLock.toString().includes('u')) {
+      theTimelock = timeLock.toString().split('u')[1];
+    } else if(!timeLock.toString().includes('0x')) {
+      theTimelock = timeLock.toString(16).padStart(32, '0');
+    } else {
+      theTimelock = timeLock;
+    }
+    this.logger.verbose('theTimelock: ' + theTimelock);
+    this.logger.verbose('decimalamount: ' + decimalamount);
+
+    // // const decimalamount = parseInt(amount.toString(),16);
+    // this.logger.error('decimalamount: ' + decimalamount);
     const smallamount = decimalamount;
     // let smallamount = amount.div(etherDecimals).toNumber();
     // this.logger.error("smallamount: " + smallamount)
@@ -561,7 +583,7 @@ class ContractHandler {
     // const tl3 = tl2.slice(2);
     const tl3 = tl2;
     const paddedtimelock = timeLock.toString(16).padStart(32, '0');
-    console.log('contracthandler.135 ', smallamount, swapamount, paddedamount, timeLock, paddedtimelock, tl1, tl2, tl3);
+    console.log('contracthandler.586 ', smallamount, swapamount, paddedamount, timeLock, paddedtimelock, tl1, tl2, tl3);
     // ontracthandler.135  1995106 1e7162 000000000000000000000000001e7162
     // 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea
     // (claimStx (preimage (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16)) (tokenPrincipal <ft-trait>))
@@ -575,7 +597,7 @@ class ContractHandler {
       // bufferCV(Buffer.from(tl3,'hex')),
       contractPrincipalCV(token.getTokenContractAddress(), token.getTokenContractName()),
     ];
-    this.logger.verbose('stacks contracthandler.523 functionargs: ' + stringify(functionArgs));
+    // this.logger.verbose('stacks contracthandler.523 functionargs: ' + stringify(functionArgs));
 
     // const functionArgs = [
     //   bufferCV(preimageHash),
