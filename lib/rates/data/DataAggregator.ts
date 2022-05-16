@@ -9,6 +9,7 @@ import Coingecko from './exchanges/Coingecko';
 import ArkadikoOracle from './exchanges/ArkadikoOracle';
 import Okcoin from './exchanges/Okcoin';
 import AlexOracle from './exchanges/AlexOracle';
+import AlexResillientOracle from './exchanges/AlexResillientOracle';
 
 class DataAggregator {
   private readonly exchanges: Exchange[] = [
@@ -21,6 +22,7 @@ class DataAggregator {
     new ArkadikoOracle(),
     new Okcoin(),
     new AlexOracle(),
+    new AlexResillientOracle(),
   ];
 
   public readonly pairs = new Set<[string, string]>();
