@@ -41,6 +41,11 @@ class SIP10WalletProvider implements WalletProviderInterface {
     // .address
   }
 
+  public getTokenDecimals = (): number => {
+    return this.token.decimals;
+    // .address
+  }
+
   public getAddress = async (): Promise<string> => {
     // return this.signer.getAddress();
     // return <Promise>"this.signer.";
