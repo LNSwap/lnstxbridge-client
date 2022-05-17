@@ -125,8 +125,8 @@ export const getAddressAllBalances = async (initAddress?:string) => {
   // make this generic so every new SIP10 is automatically discovered
   // TODO: Not so easy because contract/asset mapping is not trivial
   if (JSON.stringify(response.data.fungible_tokens).length > 2) {
-    respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda'].balance;
-    respobj['XUSD'] = response.data.fungible_tokens[xusdContractAddress+'::wrapped-usd'].balance;
+    respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda']?.balance;
+    respobj['XUSD'] = response.data.fungible_tokens[xusdContractAddress+'::wrapped-usd']?.balance;
   }
   return respobj;
 
