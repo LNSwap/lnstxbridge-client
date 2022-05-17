@@ -1812,6 +1812,7 @@ class Service {
         let remoteLNBalance = 0;
         let onchainBalance = 0;
         let StxBalance = 0;
+        let tokenBalances = {};
         // let UsdaBalance = 0;
         balances.forEach((balance: Balance, symbol: string) => {
           // console.log('balance, symbol ', balance, symbol);
@@ -1819,7 +1820,8 @@ class Service {
           console.log('symbol, totalBalance ', symbol, totalBalance);
           if(symbol === 'BTC') onchainBalance = totalBalance;
           if(symbol === 'STX') StxBalance = parseInt(totalBalance+'');
-          // if(symbol === 'USDA') UsdaBalance = totalBalance;
+          if(symbol === 'USDA') tokenBalances['USDA'] = parseInt(totalBalance+'');
+          if(symbol === 'XUSD') tokenBalances['XUSD'] = parseInt(totalBalance+'');
           const lightningBalance = balance.getLightningBalance();
           if(lightningBalance) {
             localLNBalance = lightningBalance.getLocalBalance();
@@ -1832,7 +1834,7 @@ class Service {
         // cap the broadcasted values to configured max in boltz.conf
         // leave this to aggregator for now
 
-        // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
+        // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs), tokenBalances);
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
           apiVersion: getConfig().apiVersion,
           stacksAddress,
@@ -1843,6 +1845,7 @@ class Service {
           remoteLNBalance,
           onchainBalance,
           StxBalance,
+          tokenBalances,
         });
         this.logger.verbose(`service.1795 joinAggregator response: ${stringify(response.data)}`);
         // client should always send updated join messages to ensure liveness
