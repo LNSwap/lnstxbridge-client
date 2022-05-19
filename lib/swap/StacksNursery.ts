@@ -941,7 +941,7 @@ class StacksNursery extends EventEmitter {
         // response will be an array now - find lock?
         let txData = response.data.txData.find((item) => item.event === 'lock');
         const swapContract = response.data.txData.find((item) => item.swapContractAddress.includes('sip10swap'));
-        console.log('sn.935 got swapContract? ', swapContract);
+        // console.log('sn.935 got swapContract? ', swapContract);
         if(txData && txData.txId) {
           // got lock - mark it
           if (swapContract) {
