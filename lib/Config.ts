@@ -479,18 +479,18 @@ class Config {
     deepMerge(this.config, args);
 
     // update config from environment variables - highest priority - i.e. umbrel docker-compose.yml
-    if(process.env.BITCOIN_IP) this.config.currencies[0].chain.host = process.env.BITCOIN_IP
-    if(process.env.BITCOIN_RPC_PORT) this.config.currencies[0].chain.port = Number(process.env.BITCOIN_RPC_PORT)
-    if(process.env.BITCOIN_RPC_USER) this.config.currencies[0].chain.user = process.env.BITCOIN_RPC_USER
-    if(process.env.BITCOIN_RPC_PASS) this.config.currencies[0].chain.password = process.env.BITCOIN_RPC_PASS
-    if(process.env.BITCOIN_ZMQ_RAWTX_PORT) this.config.currencies[0].chain.zmqpubrawtx = process.env.BITCOIN_ZMQ_RAWTX_PORT
-    if(process.env.BITCOIN_ZMQ_RAWBLOCK_PORT) this.config.currencies[0].chain.zmqpubrawblock = process.env.BITCOIN_ZMQ_RAWBLOCK_PORT
-    if(process.env.BITCOIN_ZMQ_HASHBLOCK_PORT) this.config.currencies[0].chain.zmqpubhashblock = process.env.BITCOIN_ZMQ_HASHBLOCK_PORT
-    if(process.env.LND_IP) this.config.currencies[0].lnd!.host = process.env.LND_IP
-    if(process.env.LND_GRPC_PORT) this.config.currencies[0].lnd!.port = Number(process.env.LND_GRPC_PORT)
-    if(process.env.BITCOIN_NETWORK) this.config.currencies[0].lnd!.macaroonpath = path.join('/lnd', 'data', 'chain', 'bitcoin', process.env.BITCOIN_NETWORK, 'admin.macaroon')
-    if(process.env.APP_PASSWORD) this.config.dashboard.password = process.env.APP_PASSWORD
-    if(process.env.APP_HIDDEN_SERVICE) this.config.providerUrl = `http://${process.env.APP_HIDDEN_SERVICE}:9008`
+    if(process.env.BITCOIN_IP) this.config.currencies[0].chain.host = process.env.BITCOIN_IP;
+    if(process.env.BITCOIN_RPC_PORT) this.config.currencies[0].chain.port = Number(process.env.BITCOIN_RPC_PORT);
+    if(process.env.BITCOIN_RPC_USER) this.config.currencies[0].chain.user = process.env.BITCOIN_RPC_USER;
+    if(process.env.BITCOIN_RPC_PASS) this.config.currencies[0].chain.password = process.env.BITCOIN_RPC_PASS;
+    if(process.env.BITCOIN_ZMQ_RAWTX_PORT) this.config.currencies[0].chain.zmqpubrawtx = process.env.BITCOIN_ZMQ_RAWTX_PORT;
+    if(process.env.BITCOIN_ZMQ_RAWBLOCK_PORT) this.config.currencies[0].chain.zmqpubrawblock = process.env.BITCOIN_ZMQ_RAWBLOCK_PORT;
+    if(process.env.BITCOIN_ZMQ_HASHBLOCK_PORT) this.config.currencies[0].chain.zmqpubhashblock = process.env.BITCOIN_ZMQ_HASHBLOCK_PORT;
+    if(process.env.LND_IP) this.config.currencies[0].lnd!.host = process.env.LND_IP;
+    if(process.env.LND_GRPC_PORT) this.config.currencies[0].lnd!.port = Number(process.env.LND_GRPC_PORT);
+    if(process.env.BITCOIN_NETWORK) this.config.currencies[0].lnd!.macaroonpath = path.join('/lnd', 'data', 'chain', 'bitcoin', process.env.BITCOIN_NETWORK, 'admin.macaroon');
+    if(process.env.APP_PASSWORD) this.config.dashboard.password = process.env.APP_PASSWORD;
+    if(process.env.APP_HIDDEN_SERVICE) this.config.providerUrl = `http://${process.env.APP_HIDDEN_SERVICE}:9008`;
     console.log('config.486 merged data from env variables and set final config: ', JSON.stringify(this.config));
 
     return this.config;
