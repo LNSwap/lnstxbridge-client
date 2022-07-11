@@ -490,7 +490,8 @@ class Config {
     if(process.env.LND_GRPC_PORT) this.config.currencies[0].lnd!.port = Number(process.env.LND_GRPC_PORT);
     if(process.env.BITCOIN_NETWORK) this.config.currencies[0].lnd!.macaroonpath = path.join('/lnd', 'data', 'chain', 'bitcoin', process.env.BITCOIN_NETWORK, 'admin.macaroon');
     if(process.env.APP_PASSWORD) this.config.dashboard.password = process.env.APP_PASSWORD;
-    if(process.env.APP_HIDDEN_SERVICE) this.config.providerUrl = `http://${process.env.APP_HIDDEN_SERVICE}:9008`;
+    if(process.env.APP_HIDDEN_SERVICE) this.config.providerUrl = `http://${process.env.APP_HIDDEN_SERVICE}:${process.env.APP_PORT || '9008'}`;
+    if(process.env.APP_PORT) this.config.api.port = Number(process.env.APP_PORT);
     console.log('config.486 merged data from env variables and set final config: ', JSON.stringify(this.config));
 
     return this.config;
