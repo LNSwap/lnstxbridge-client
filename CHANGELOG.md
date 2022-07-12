@@ -1,3 +1,9 @@
+## 1.1.2-beta (2022-07-20)
+
+### Features
+
+* add port env var + new zx-based install script
+
 ## 1.1.0-beta (2022-03-20)
 
 ### Features
