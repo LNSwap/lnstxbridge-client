@@ -74,7 +74,8 @@ class RateProvider {
     private currencies: Map<string, Currency>,
     private getFeeEstimation: (symbol: string) => Promise<Map<string, number>>,
   ) {
-    this.feeProvider = new FeeProvider(this.logger, this.dataAggregator, this.getFeeEstimation);
+    // this.dataAggregator,
+    this.feeProvider = new FeeProvider(this.logger, this.getFeeEstimation);
     this.parseCurrencies(Array.from(currencies.values()));
   }
 
@@ -264,13 +265,13 @@ class RateProvider {
       // not fixed - so far it makes sense
       // this.logger.error("TODO: fix STX max/min limits");
       let maximalLimit = Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal * rate)) * 10;
-      // this.logger.error('rateprovider.263 pair maximalLimit '+ pair + ', ' + maximalLimit);
+      // this.logger.error('rateprovider.263 pair maximalLimit '+ pair + ', ' + maximalLimit); // this is configured max
 
       const signerBalances = await getAddressAllBalances();
       // this.logger.error('rateprovider.267 signerBalances '+ JSON.stringify(signerBalances) + ', ' + signerBalances[quote]);
 
       maximalLimit = Math.floor(Math.min(maximalLimit, (signerBalances[quote] || 0) * 100));
-      // console.log('maximalLimit based on available balance: ', maximalLimit);
+      // console.log('maximalLimit based on available balance: ', pair, maximalLimit);
 
       // // TODO: Fix this before production to optimize it!!!
       // // btc limits

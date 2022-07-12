@@ -3,11 +3,11 @@ import { EtherSwap } from 'boltz-core/typechain/EtherSwap';
 import { ERC20Swap } from 'boltz-core/typechain/ERC20Swap';
 import Logger from '../../Logger';
 import { getHexString, stringify } from '../../Utils';
-import { getGasPrice, getStacksNetwork } from './StacksUtils';
+import { getGasPrice, getStacksNetwork, removeU } from './StacksUtils';
 import ERC20WalletProvider from '../providers/ERC20WalletProvider';
 import { etherDecimals, ethereumPrepayMinerFeeGasLimit } from '../../consts/Consts';
 
-// makeContractCall, , broadcastTransaction, makeStandardSTXPostCondition
+// makeContractCall, , broadcastTransaction, makeStandardSTXPostCondition, makeContractFungiblePostCondition, createAssetInfo
 import { bufferCV, uintCV, standardPrincipalCV, contractPrincipalCV, AnchorMode, FungibleConditionCode, makeContractSTXPostCondition, PostConditionMode, makeContractCall, broadcastTransaction, TxBroadcastResult } from '@stacks/transactions';
 import SIP10WalletProvider from '../providers/SIP10WalletProvider';
 // import { contractPrincipalCV } from '@blockstack/stacks-transactions';
@@ -40,6 +40,7 @@ class ContractHandler {
     this.contractAddress = contract.split('.')[0];
     this.contractName = contract.split('.')[1];
 
+    // this is the sip10 swap contract
     this.sip10contractAddress = sip10Contract.split('.')[0];
     this.sip10contractName = sip10Contract.split('.')[1];
     // this.etherSwap = etherSwap;
@@ -168,13 +169,13 @@ class ContractHandler {
     claimAddress: string,
     timeLock: number,
   ): Promise<TxBroadcastResult> => {
-    this.logger.debug(`ch.168 Claiming ${amount} Stx with preimage ${getHexString(preimage)} and timelock ${timeLock}`);
+    this.logger.debug(`ch.168 Claiming ${amount} Stx with preimage ${getHexString(preimage)} and timelock ${timeLock} ${claimAddress}`);
     let decimalamount;
     let theTimelock;
 
     // from atomic swap
     // Claiming 000000000000000000000000004c4b40 Stx with preimage cdf07179b2ece93ccb76cd4f6fb2ab1c65621c4988bae4f4de8503e64c1eaf0f and timelock 1123
-    
+
     // need to add a way to handle this as well - happens when coming from attemptsettleswap - invoice.pending
     // Claiming 26101488000000000000 Stx with preimage 7a5227e168a41dc5d311e3eacaa8c9a19de070ab5e258134a02b2cdbaa6e00ee and timelock 44337
     if(amount.toString().includes('u')) {
@@ -196,32 +197,31 @@ class ContractHandler {
       theTimelock = timeLock;
     }
     this.logger.verbose('theTimelock: ' + theTimelock);
-
     this.logger.verbose('decimalamount: ' + decimalamount);
     const smallamount = decimalamount;
     // let smallamount = amount.div(etherDecimals).toNumber();
     // this.logger.error("smallamount: " + smallamount)
 
-    // Add an optional post condition
-    // See below for details on constructing post conditions
-    // const postConditionAddress = this.contractAddress;
-    const postConditionCode = FungibleConditionCode.GreaterEqual;
-    // new BigNum(1000000);
-    const postConditionAmount = new BigNum(decimalamount);
+    // // Add an optional post condition
+    // // See below for details on constructing post conditions
+    // // const postConditionAddress = this.contractAddress;
+    // const postConditionCode = FungibleConditionCode.GreaterEqual;
+    // // new BigNum(1000000);
+    // const postConditionAmount = new BigNum(decimalamount);
+    // // const postConditions = [
+    // //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    // // ];
+
     // const postConditions = [
-    //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    //   makeContractSTXPostCondition(
+    //     this.contractAddress,
+    //     this.contractName,
+    //     postConditionCode,
+    //     postConditionAmount
+    //   )
     // ];
 
-    const postConditions = [
-      makeContractSTXPostCondition(
-        this.contractAddress,
-        this.contractName,
-        postConditionCode,
-        postConditionAmount
-      )
-    ];
-
-    console.log('contracthandler.129 postConditions: ' + postConditions, claimAddress);
+    // console.log('contracthandler.129 postConditions: ' + postConditions, claimAddress);
 
     const swapamount = smallamount.toString(16).split('.')[0] + '';
     const paddedamount = swapamount.padStart(32, '0');
@@ -418,13 +418,11 @@ class ContractHandler {
     this.logger.debug(`Locking ${amount} sip10 with preimage hash: ${getHexString(preimageHash)} with claimaddress ${claimAddress}`);
     // Locking 1613451070000000000 Stx with preimage hash: 3149e7d4d658ee7e513c63af7d7d395963141252cb43505e1e4a146fbcbe39e1
 
-    amount = amount.div(etherDecimals).div(100);
-    const decimalamount = parseInt(amount.toString(),10);
-    // stop doing this  + 1;
-    this.logger.verbose('contracthandler.380 smaller amount: '+ amount + ', '+ decimalamount + ', '+ this.sip10contractAddress);
-    //  + ', ' JSON.stringify(token) +
+    // this needs to be done as per token decimal
+    const decimalamount = token.normalizeTokenAmount(amount.div(etherDecimals).toString());
+    this.logger.verbose('contracthandler.380 smaller amount: '+ amount + ', '+ decimalamount + ', '+ this.sip10contractAddress + ', ' + this.sip10contractName);
 
-    // Add an optional post condition
+    // TODO: Add an optional post condition
     // See below for details on constructing post conditions
     // const postConditionAddress = this.contractAddress;
     const postConditionCode = FungibleConditionCode.LessEqual;
@@ -434,19 +432,24 @@ class ContractHandler {
     // const postConditions = [
     //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
     // ];
-    // this.logger.error("contracthandler.76")
-    const postConditions = [
-      makeContractSTXPostCondition(
-        this.contractAddress,
-        this.contractName,
-        postConditionCode,
-        postConditionAmount
-      )
-    ];
+    // const fungibleAssetInfo = createAssetInfo(token.getTokenContractAddress(), token.getTokenContractName(), assetContractName);
 
-    console.log('contracthandler.403: ',this.contractAddress, this.contractName, postConditionCode, postConditionAmount);
+    // // this.logger.error("contracthandler.76")
+    // const postConditions = [
+    //   makeContractSTXPostCondition(
+    //   // makeContractFungiblePostCondition(
+    //     // this.contractAddress,
+    //     // this.contractName,
+    //     this.sip10contractAddress,
+    //     this.sip10contractName,
+    //     postConditionCode,
+    //     postConditionAmount
+    //   )
+    // ];
 
-    
+    // this.contractAddress, this.contractName
+    console.log('contracthandler.403: ',this.sip10contractAddress, this.sip10contractName, postConditionCode, postConditionAmount);
+
     const swapamount = decimalamount.toString(16).split('.')[0] + '';
     const paddedamount = swapamount.padStart(32, '0');
     const tl1 = timeLock.toString(16);
@@ -490,11 +493,12 @@ class ContractHandler {
       senderKey: stacksNetworkData.privateKey,
       // validateWithAbi: true,
       network: stacksNetworkData.stacksNetwork,
-      postConditions,
+      // postConditions,
       postConditionMode: PostConditionMode.Allow,
       anchorMode: AnchorMode.Any,
       // fee: new BigNum(120000),
       nonce: new BigNum(stacksNetworkData.nonce),
+      fee: new BigNum(stacksNetworkData.lockStxCost),
       // onFinish: data => {
       //   console.log('Stacks lock Transaction:', JSON.stringify(data));
       //   incrementNonce();
@@ -519,58 +523,84 @@ class ContractHandler {
     claimAddress: string,
     timeLock: number,
   ): Promise<TxBroadcastResult> => {
-    this.logger.debug(`Claiming ${amount} sip10 with preimage ${getHexString(preimage)} and timelock ${timeLock}`);
+    this.logger.debug(`Claiming ${amount} sip10 with preimage ${getHexString(preimage)} and timelock ${timeLock} ${claimAddress}`);
+    let decimalamount;
+    let theTimelock;
 
-    const decimalamount = parseInt(amount.toString(),16);
-    this.logger.error('decimalamount: ' + decimalamount);
+    if(amount.toString().includes('u')) {
+      // optimized
+      // ch.168 Claiming u1995070 Stx with preimage 031b251d4e7c77793692e26858963d5b77dfaf56fb67de7a7136a2811f0a6c6a and timelock u180
+      decimalamount = removeU(amount);
+    } else if(!amount.toString().includes('0x') && !amount.toString().includes('.') && amount.toString().length < 32) {
+      decimalamount = amount.div(10**12).toNumber();
+    } else {
+      // Claiming 0x000000000000000000000000001e81a1 Stx with preimage 6dbd24b9e7d350d13eae95c218eba735e4a87e3a7ec205b9bd83805a37b4be39 and timelock 0x0000000000000000000000000000abe5
+      decimalamount = parseInt(amount.toString(),16);
+    }
+
+    if(timeLock.toString().includes('u')) {
+      theTimelock = timeLock.toString().split('u')[1];
+    } else if(!timeLock.toString().includes('0x')) {
+      theTimelock = timeLock.toString(16).padStart(32, '0');
+    } else {
+      theTimelock = timeLock;
+    }
+    this.logger.verbose('claimToken theTimelock: ' + theTimelock);
+    decimalamount = decimalamount * (10 ** (token.getTokenDecimals() - 6));
+    this.logger.verbose('claimToken decimalamount: ' + decimalamount);
+
+    // // const decimalamount = parseInt(amount.toString(),16);
+    // this.logger.error('decimalamount: ' + decimalamount);
     const smallamount = decimalamount;
     // let smallamount = amount.div(etherDecimals).toNumber();
     // this.logger.error("smallamount: " + smallamount)
 
-    // Add an optional post condition
-    // See below for details on constructing post conditions
-    // const postConditionAddress = this.contractAddress;
-    const postConditionCode = FungibleConditionCode.GreaterEqual;
-    // new BigNum(1000000);
-    const postConditionAmount = new BigNum(decimalamount);
+    // // Add an optional post condition
+    // // See below for details on constructing post conditions
+    // // const postConditionAddress = this.contractAddress;
+    // const postConditionCode = FungibleConditionCode.GreaterEqual;
+    // // new BigNum(1000000);
+    // const postConditionAmount = new BigNum(decimalamount);
+    // // const postConditions = [
+    // //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    // // ];
+
     // const postConditions = [
-    //   makeStandardSTXPostCondition(postConditionAddress, postConditionCode, postConditionAmount),
+    //   makeContractSTXPostCondition(
+    //     this.contractAddress,
+    //     this.contractName,
+    //     postConditionCode,
+    //     postConditionAmount
+    //   )
     // ];
 
-    const postConditions = [
-      makeContractSTXPostCondition(
-        this.contractAddress,
-        this.contractName,
-        postConditionCode,
-        postConditionAmount
-      )
-    ];
-
-    console.log('contracthandler.129 postConditions: ', postConditions, claimAddress);
+    // console.log('contracthandler.129 postConditions: ', postConditions, claimAddress);
 
     const swapamount = smallamount.toString(16).split('.')[0] + '';
-    const paddedamount = swapamount.padStart(32, '0');
-    const tl1 = timeLock.toString(16);
-    const tl2 = tl1.padStart(32, '0');
+    // const paddedamount = swapamount.padStart(32, '0');
+    // const tl1 = timeLock.toString(16);
+    // const tl2 = tl1.padStart(32, '0');
     // why slice it?! dont slice it
     // const tl3 = tl2.slice(2);
-    const tl3 = tl2;
-    const paddedtimelock = timeLock.toString(16).padStart(32, '0');
-    console.log('contracthandler.135 ', smallamount, swapamount, paddedamount, timeLock, paddedtimelock, tl1, tl2, tl3);
+    // const tl3 = tl2;
+    // const paddedtimelock = timeLock.toString(16).padStart(32, '0');
+    // smallamount, paddedamount,paddedtimelock, tl1, tl2, tl3
+    this.logger.verbose('contracthandler.586 swapamount ' +  swapamount + ', ' + timeLock,);
     // ontracthandler.135  1995106 1e7162 000000000000000000000000001e7162
     // 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea 0x000000000000000000000000000012ea
     // (claimStx (preimage (buff 32)) (amount (buff 16)) (claimAddress (buff 42)) (refundAddress (buff 42)) (timelock (buff 16)) (tokenPrincipal <ft-trait>))
     const functionArgs = [
       // bufferCV(Buffer.from('4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a', 'hex')),
       bufferCV(preimage),
-      uintCV(swapamount),
+      // uintCV(swapamount),
+      uintCV(decimalamount),
       // bufferCV(Buffer.from(paddedamount,'hex')),
       // bufferCV(Buffer.from('01','hex')),
       // bufferCV(Buffer.from('01','hex')),
       // bufferCV(Buffer.from(tl3,'hex')),
       contractPrincipalCV(token.getTokenContractAddress(), token.getTokenContractName()),
     ];
-    this.logger.verbose('stacks contracthandler.523 functionargs: ' + stringify(functionArgs));
+    // this.logger.verbose('stacks contracthandler.523 functionargs: ' + stringify(functionArgs));
 
     // const functionArgs = [
     //   bufferCV(preimageHash),
@@ -592,6 +622,7 @@ class ContractHandler {
       postConditionMode: PostConditionMode.Allow,
       // postConditions,
       anchorMode: AnchorMode.Any,
+      fee: new BigNum(stacksNetworkData.claimStxCost),
       nonce: new BigNum(stacksNetworkData.nonce),
       // onFinish: data => {
       //   console.log('Stacks claim Transaction:', JSON.stringify(data));
@@ -624,10 +655,13 @@ class ContractHandler {
       this.logger.debug(`Refunding ${amount} sip10 with preimage hash: ${getHexString(preimageHash)} with claimaddress ${claimAddress}`);
       // Locking 1613451070000000000 Stx with preimage hash: 3149e7d4d658ee7e513c63af7d7d395963141252cb43505e1e4a146fbcbe39e1
 
-      amount = amount.div(etherDecimals).div(100);
-      // this +1 causes issues when 49 -> 50
-      // removed  + 1
-      const decimalamount = parseInt(amount.toString(),10);
+      // this needs to be done as per token decimal
+      const decimalamount = token.normalizeTokenAmount(amount.div(etherDecimals).toString());
+
+      // amount = amount.div(etherDecimals).div(100);
+      // // this +1 causes issues when 49 -> 50
+      // // removed  + 1
+      // const decimalamount = parseInt(amount.toString(),10);
       this.logger.verbose('contracthandler.581 smaller amount: '+ amount + ', '+ decimalamount);
 
       // Add an optional post condition
@@ -694,6 +728,7 @@ class ContractHandler {
         postConditionMode: PostConditionMode.Allow,
         anchorMode: AnchorMode.Any,
         // fee: new BigNum(100000),
+        fee: new BigNum(stacksNetworkData.refundStxCost),
         nonce: new BigNum(stacksNetworkData.nonce),
         // onFinish: data => {
         //   console.log('Stacks refund Transaction:', JSON.stringify(data));

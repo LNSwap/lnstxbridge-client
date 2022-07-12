@@ -20,6 +20,7 @@ services:
       LND_GRPC_PORT: $LND_GRPC_PORT
       APP_PASSWORD: $APP_PASSWORD
       APP_HIDDEN_SERVICE: $APP_HIDDEN_SERVICE
+      APP_PORT: $APP_PORT
   dashboard:
     container_name: lnstxbridge-dashboard
     image: pseudozach/lnstxbridge-dashboard:latest

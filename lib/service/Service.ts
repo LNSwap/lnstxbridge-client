@@ -880,7 +880,7 @@ class Service {
 
       // console.log('TODO: more validation NEEDED'); //done
       if (response.onchainAmount && args.quoteAmount && (args.quoteAmount > response.onchainAmount/100)) {
-        throw Errors.WRONG_RATE()
+        throw Errors.WRONG_RATE();
       }
 
     } else {
@@ -1023,24 +1023,27 @@ class Service {
 
     const { base, quote } = splitPairId(swap.pair);
     const onchainCurrency = getChainCurrency(base, quote, swap.orderSide, false);
-    console.log('s.838 swap.rate swap.orderSide, base, quote', swap.rate, swap.orderSide, base, quote);
+    console.log('service.838 swap.rate swap.orderSide, base, quote', swap.rate, swap.orderSide, base, quote);
 
     const rate = getRate(swap.rate!, swap.orderSide, true);
-    console.log('s.876 rate ', rate);
+    console.log('service.876 rate ', rate);
 
     const percentageFee = this.rateProvider.feeProvider.getPercentageFee(swap.pair);
     const baseFee = this.rateProvider.feeProvider.getBaseFee(onchainCurrency, BaseFeeType.NormalClaim);
-    console.log('s.781 onchainCurrency, percentageFee, baseFee', onchainCurrency, percentageFee, baseFee);
+    console.log('service.781 onchainCurrency, percentageFee, baseFee', onchainCurrency, percentageFee, baseFee);
 
     let onchainAmount, invoiceAmount, invoiceAmountAS;
-    if ((swap.pair === 'BTC/STX' || swap.pair === 'BTC/USDA') && swap.orderSide === 1) {
+    if ((swap.pair === 'BTC/STX' || swap.pair === 'BTC/USDA' || swap.pair === 'BTC/XUSD') && swap.orderSide === 1) {
+
       // requested amount is already in mstx
+      if(swap.pair !== 'BTC/XUSD') // xusd is already 8 decimals
       onchainAmount = requestedAmount*100; //go from mstx -> boltz (10^8)
+
       invoiceAmount = this.calculateInvoiceAmount(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
       invoiceAmountAS = this.calculateInvoiceAmountAS(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
-      console.log('s.872 onchainAmount=requestedAmount ', requestedAmount);
-      console.log('s.873 invoiceAmount ', invoiceAmount);
-      console.log('s.874 invoiceAmountAS ', invoiceAmountAS);
+      console.log('service.872 onchainAmount=requestedAmount ', requestedAmount);
+      console.log('service.873 invoiceAmount ', invoiceAmount);
+      console.log('service.874 invoiceAmountAS ', invoiceAmountAS);
 
       this.verifyAmount(swap.pair, rate, invoiceAmount, swap.orderSide, false);
 
@@ -1049,15 +1052,15 @@ class Service {
         throw Errors.WRONG_RATE();
       }
 
-      console.log('s.899 ', 'user requested ', requestedAmount, ' stx/usda for ',  )
+      console.log('service.899 ', 'user requested ', requestedAmount, ' stx/usda for ',  )
 
     } else {
       // requested amount in mstx
       onchainAmount = ((requestedAmount/1000000) * rate) * 100000000;
-      console.log('s.810 requestedAmount, onchainAmount, swap.orderSide: ', requestedAmount, onchainAmount, swap.orderSide);
+      console.log('service.810 requestedAmount, onchainAmount, swap.orderSide: ', requestedAmount, onchainAmount, swap.orderSide);
 
       invoiceAmount = this.calculateOnchainAmount(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
-      console.log('s.784 requestedAmount, onchainAmount, invoiceAmount', requestedAmount, onchainAmount, invoiceAmount);
+      console.log('service.784 requestedAmount, onchainAmount, invoiceAmount', requestedAmount, onchainAmount, invoiceAmount);
 
 
 
@@ -1407,7 +1410,7 @@ class Service {
     let baseFee = this.rateProvider.feeProvider.getBaseFee(sendingCurrency.symbol, BaseFeeType.ReverseLockup);
     if(sendingCurrency.symbol === 'STX' || sendingCurrency.symbol === 'USDA') {
       // convert from mstx to boltz default 10**8
-      baseFee = Math.round(baseFee * 100)
+      baseFee = Math.round(baseFee * 100);
     }
     // console.log('service.1375 createreverseswap rate, feePercent, baseFee: ', rate, feePercent, baseFee);
 
@@ -1809,6 +1812,7 @@ class Service {
         let remoteLNBalance = 0;
         let onchainBalance = 0;
         let StxBalance = 0;
+        let tokenBalances = {};
         // let UsdaBalance = 0;
         balances.forEach((balance: Balance, symbol: string) => {
           // console.log('balance, symbol ', balance, symbol);
@@ -1816,7 +1820,8 @@ class Service {
           console.log('symbol, totalBalance ', symbol, totalBalance);
           if(symbol === 'BTC') onchainBalance = totalBalance;
           if(symbol === 'STX') StxBalance = parseInt(totalBalance+'');
-          // if(symbol === 'USDA') UsdaBalance = totalBalance;
+          if(symbol === 'USDA') tokenBalances['USDA'] = parseInt(totalBalance+'');
+          if(symbol === 'XUSD') tokenBalances['XUSD'] = parseInt(totalBalance+'');
           const lightningBalance = balance.getLightningBalance();
           if(lightningBalance) {
             localLNBalance = lightningBalance.getLocalBalance();
@@ -1829,7 +1834,7 @@ class Service {
         // cap the broadcasted values to configured max in boltz.conf
         // leave this to aggregator for now
 
-        // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs));
+        // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs), tokenBalances);
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
           apiVersion: getConfig().apiVersion,
           stacksAddress,
@@ -1840,6 +1845,7 @@ class Service {
           remoteLNBalance,
           onchainBalance,
           StxBalance,
+          tokenBalances,
         });
         this.logger.verbose(`service.1795 joinAggregator response: ${stringify(response.data)}`);
         // client should always send updated join messages to ensure liveness

@@ -8,6 +8,8 @@ import CoinbasePro from './exchanges/CoinbasePro';
 import Coingecko from './exchanges/Coingecko';
 import ArkadikoOracle from './exchanges/ArkadikoOracle';
 import Okcoin from './exchanges/Okcoin';
+import AlexOracle from './exchanges/AlexOracle';
+import AlexResilientOracle from './exchanges/AlexResilientOracle';
 
 class DataAggregator {
   private readonly exchanges: Exchange[] = [
@@ -19,6 +21,8 @@ class DataAggregator {
     new Coingecko(),
     new ArkadikoOracle(),
     new Okcoin(),
+    new AlexOracle(),
+    new AlexResilientOracle(),
   ];
 
   public readonly pairs = new Set<[string, string]>();
@@ -67,7 +71,7 @@ class DataAggregator {
     // Filter all results that are not numeric (failed requests)
     const validResults: number[] = results.filter(result => !isNaN(Number(result)));
     validResults.sort((a, b) => a - b);
-    console.log('dataagg.65 allexchange validResults: ', validResults);
+    console.log('dataagg.65 allexchange validResults: ', baseAsset, quoteAsset, validResults);
 
     const middle = (validResults.length - 1) / 2;
 

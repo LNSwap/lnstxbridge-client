@@ -42,7 +42,7 @@ let lockStxCost = 760000;
 let claimStxCost = 760000;
 let refundStxCost = 760000;
 const maxStacksTxFee = 751000;
-const minStacksTxFee = 3000; // min fee requested by jamil
+const minStacksTxFee = 5000; // min fee requested by jamil
 console.log('stacksutils.43 setting default lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee, minStacksTxFee ', lockStxCost, claimStxCost, refundStxCost, maxStacksTxFee, minStacksTxFee);
 
 // const apiConfig = new Configuration({
@@ -111,12 +111,22 @@ export const getAddressAllBalances = async (initAddress?:string) => {
   const url = `${coreApiUrl}/extended/v1/address/${queryAddress}/balances`;
   // console.log("started getAddressAllBalances ", url);
   const response = await axios.get(url);
-  // console.log("getAddressAllBalances ", response.data, response.data.stx);
-  // console.log("getAddressAllBalances tokens", tokens);
+  const respobj = {STX: response.data.stx.balance};
+
+  // console.log('getAddressAllBalances ft ', response.data.fungible_tokens, response.data.fungible_tokens.length);
+  // console.log('getAddressAllBalances tokens', tokens);
   const usdaContractAddress = tokens.find((item) => item.symbol === 'USDA').contractAddress;
-  let respobj = {STX: response.data.stx.balance};
+  const xusdContractAddress = tokens.find((item) => item.symbol === 'XUSD').contractAddress;
+
+  // Object.keys(response.data.fungible_tokens).forEach((ft) => {
+  //   console.log('ft key/value ', ft);
+  // });
+
+  // make this generic so every new SIP10 is automatically discovered
+  // TODO: Not so easy because contract/asset mapping is not trivial
   if (JSON.stringify(response.data.fungible_tokens).length > 2) {
-    respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda'].balance;
+    respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda']?.balance;
+    respobj['XUSD'] = response.data.fungible_tokens[xusdContractAddress+'::wrapped-usd']?.balance;
   }
   return respobj;
 
@@ -209,7 +219,7 @@ export const getFee = async () => {
 export const getFeev2 = async (estimated_len: number, transaction_payload: string) => {
   try {
     // console.log("stacksutils.95 getFee ", coreApiUrl);
-    let reqobj = {
+    const reqobj = {
       estimated_len,
       transaction_payload,
     };
@@ -379,22 +389,23 @@ export const querySip10SwapValuesFromTx = async (txid:string): Promise<Sip10Swap
   const response = await axios.get(url);
   const txData = response.data;
 
-  // console.log('sip10valuesfromtx: ', txData.contract_call.function_args);
+  // console.log('sip10valuesfromtx: ', txid, txData.contract_call.function_args);
 
-  let preimageHash = txData.contract_call.function_args.filter(a=>a.name=='preimageHash')[0].repr;
+  const preimageHash = txData.contract_call.function_args.filter(a=>a.name=='preimageHash')[0].repr;
   let amount = txData.contract_call.function_args.filter(a=>a.name=='amount')[0].repr;
-  amount = BigNumber.from(amount).mul(etherDecimals).mul(100);
-  let claimAddress = txData.contract_call.function_args.filter(a=>a.name=='claimAddress')[0].repr;
+  amount = BigNumber.from(removeU(amount)).mul(etherDecimals).mul(100);
+  // const claimAddress = txData.contract_call.function_args.filter(a=>a.name=='claimAddress')[0].repr;
   // let refundAddress = txData.contract_call.function_args.filter(a=>a.name=="refundAddress")[0].repr
   let timelock = txData.contract_call.function_args.filter(a=>a.name=='timelock')[0].repr;
-  let claimPrincipal = txData.contract_call.function_args.filter(a=>a.name=='claimPrincipal')[0].repr;
-  let tokenPrincipal = txData.contract_call.function_args.filter(a=>a.name=='tokenPrincipal')[0].repr;
+  timelock = removeU(timelock);
   timelock = parseInt(timelock.toString(10));
-  console.log('querySip10SwapValuesFromTx fetched from Tx: ', preimageHash,amount,claimAddress,timelock, claimPrincipal, tokenPrincipal);
+  const claimPrincipal = txData.contract_call.function_args.filter(a=>a.name=='claimPrincipal')[0].repr;
+  const tokenPrincipal = txData.contract_call.function_args.filter(a=>a.name=='tokenPrincipal')[0].repr;
+  console.log('querySip10SwapValuesFromTx fetched from Tx: ', preimageHash,amount,timelock, claimPrincipal, tokenPrincipal);
 
   return {
     amount: amount,
-    claimAddress: claimAddress,
+    claimAddress: '',
     timelock: timelock,
     preimageHash: parseBuffer(preimageHash),
     claimPrincipal,
@@ -438,8 +449,8 @@ export const listenContract = async (address:string) => {
 export const calculateStacksTxFee = async (contract:string, functionName:string, amount: string, timelock: string, preimageHash?: Buffer, preimage?: Buffer, claimPrincipal?: string) => {
   try {
     // STR187KT73T0A8M0DEWDX06TJR2B8WM0WP9VGZY3.stxswap_v3_debug
-    let contractAddress = contract.split('.')[0];
-    let contractName = contract.split('.')[1];
+    const contractAddress = contract.split('.')[0];
+    const contractName = contract.split('.')[1];
 
     amount = unHex(amount);
     timelock = unHex(timelock);
@@ -738,8 +749,8 @@ export const calculateStacksTxFee = async (contract:string, functionName:string,
 // }
 
 export const calculateMintFee = async (contract:string, functionName:string, userAddress:string, mintCost:number) => {
-  let contractAddress = contract.split('.')[0];
-  let contractName = contract.split('.')[1];
+  const contractAddress = contract.split('.')[0];
+  const contractName = contract.split('.')[1];
 
   const postConditionCode = FungibleConditionCode.LessEqual;
   const postConditionAmount = new BigNum(mintCost);
@@ -747,7 +758,7 @@ export const calculateMintFee = async (contract:string, functionName:string, use
     createSTXPostCondition(signerAddress, postConditionCode, postConditionAmount),
   ];
 
-  let functionArgs = [
+  const functionArgs = [
     standardPrincipalCV(userAddress),
   ];
 
@@ -793,8 +804,8 @@ export const calculateMintFee = async (contract:string, functionName:string, use
 };
 
 export const mintNFTforUser = async (contract:string, functionName:string, userAddress:string, mintCost:number) => {
-  let contractAddress = contract.split('.')[0];
-  let contractName = contract.split('.')[1];
+  const contractAddress = contract.split('.')[0];
+  const contractName = contract.split('.')[1];
 
   try {
     const postConditionCode = FungibleConditionCode.LessEqual;
@@ -803,7 +814,7 @@ export const mintNFTforUser = async (contract:string, functionName:string, userA
       createSTXPostCondition(signerAddress, postConditionCode, postConditionAmount),
     ];
 
-    let functionArgs = [
+    const functionArgs = [
       standardPrincipalCV(userAddress),
     ];
 
@@ -850,7 +861,7 @@ export const mintNFTforUser = async (contract:string, functionName:string, userA
 };
 
 export const sponsorTx = async (tx:string, minerfee:number) => {
-  let txId = '';
+  const txId = '';
   try {
     const bufferReader = new BufferReader(Buffer.from(tx, 'hex'));
     const deserializedTx = deserializeTransaction(bufferReader);
@@ -886,7 +897,7 @@ export const sponsorTx = async (tx:string, minerfee:number) => {
 };
 
 export const sendSTX = async (address:string, amount: number, memo: string) => {
-  let txId = '';
+  const txId = '';
   try {
     const sendAmount = new BigNum(amount*10**6);
 

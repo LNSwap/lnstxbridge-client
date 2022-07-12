@@ -20,6 +20,7 @@ class TimeoutDeltaProvider {
     ['ETH', 0.25],
     ['STX', 10],
     ['USDA', 10],
+    ['XUSD', 10],
   ]);
 
   private timeoutDeltas = new Map<string, PairTimeoutBlockDeltas>();

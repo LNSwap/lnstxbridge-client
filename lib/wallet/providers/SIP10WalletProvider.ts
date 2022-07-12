@@ -41,6 +41,11 @@ class SIP10WalletProvider implements WalletProviderInterface {
     // .address
   }
 
+  public getTokenDecimals = (): number => {
+    return this.token.decimals;
+    // .address
+  }
+
   public getAddress = async (): Promise<string> => {
     // return this.signer.getAddress();
     // return <Promise>"this.signer.";
@@ -49,7 +54,7 @@ class SIP10WalletProvider implements WalletProviderInterface {
   }
 
   public getBalance = async (): Promise<WalletBalance> => {
-    this.logger.info('sip10walletprovider.25 getbalance');
+    // this.logger.info('sip10walletprovider.25 getbalance');
 
     const contractAddress = this.getTokenAddress().split('.')[0];
     const contractName = this.getTokenAddress().split('.')[1];
@@ -74,7 +79,7 @@ class SIP10WalletProvider implements WalletProviderInterface {
         cvToJSON(sip10balance).value.value
         // await this.token.contract.balanceOf(await this.getAddress()),
       );
-      this.logger.verbose('sip10balance normalized '+ balance);
+      this.logger.verbose('sip10balance normalized ' + this.getTokenAddress() + ' ,' + balance);
       return {
         totalBalance: balance,
         confirmedBalance: balance,
@@ -167,7 +172,9 @@ class SIP10WalletProvider implements WalletProviderInterface {
   // }
 
   public normalizeTokenAmount = (amount: string): number => {
-    return (parseInt(amount + '',16) * (10 ** (8 - this.token.decimals))) + 100;
+    // console.log('sip10walletprovider.160 normalizeTokenAmount ', amount);
+    return (parseInt(amount + '') * (10 ** (8 - this.token.decimals)));
+    // return (parseInt(amount + '',16) * (10 ** (8 - this.token.decimals))) + 100;
   }
 }
 

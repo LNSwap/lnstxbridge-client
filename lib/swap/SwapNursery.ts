@@ -1333,7 +1333,7 @@ class SwapNursery extends EventEmitter {
       // let contractTransaction: TxBroadcastResult;
 
       const walletProvider = wallet.walletProvider as SIP10WalletProvider;
-      this.logger.verbose('swapnursery.1001 walletProvider ' + JSON.stringify(walletProvider));
+      // this.logger.verbose('swapnursery.1001 walletProvider ' + JSON.stringify(walletProvider));
 
       // if (reverseSwap.minerFeeOnchainAmount) {
       //   oldcontractTransaction = await this.walletManager.ethereumManager!.contractHandler.lockupEtherPrepayMinerfee(
@@ -1687,7 +1687,7 @@ class SwapNursery extends EventEmitter {
   }
 
   private claimSip10 = async (contractHandler: StacksContractHandler, swap: Swap, erc20SwapValues?: ERC20SwapValues, outgoingChannelId?: string, detectedPreimage?: string) => {
-    this.logger.error('swapnursery.1240 claimSip10 triggered');
+    this.logger.verbose('swapnursery.1240 claimSip10 triggered');
 
     // add additional check to see if swap expired before paying the invoice
     // happens when app is restarted on mocknet
@@ -1900,7 +1900,7 @@ class SwapNursery extends EventEmitter {
     if (swap.asLockupTransactionId) {
       if(swap.contractAddress) {
         if(swap.tokenAddress) {
-          console.log('swapn.1854 refund expired sip10 swap ', swap.id);
+          console.log('swapn.1854 refund expired sip10 swap ', swap.id, swap.tokenAddress);
           this.refundSip10AS(swap, 'USDA');
         } else {
           console.log('swapn.1863 refund expired STX swap ', swap.id);
@@ -1967,6 +1967,7 @@ class SwapNursery extends EventEmitter {
           break;
 
         case CurrencyType.Sip10:
+          console.log('refunding sip10');
           await this.refundSip10(reverseSwap, chainSymbol);
           break;
       }
@@ -2177,34 +2178,39 @@ class SwapNursery extends EventEmitter {
     const stacksManager = this.walletManager.stacksManager!;
     const walletProvider = this.walletManager.wallets.get(chainSymbol)!.walletProvider as SIP10WalletProvider;
 
-    // const etherSwapValues = await queryEtherSwapValuesFromLock(ethereumManager.etherSwap, reverseSwap.transactionId!);
-    const etherSwapValues = await querySip10SwapValuesFromTx(reverseSwap.transactionId!);
-    const contractTransaction:TxBroadcastResult = await stacksManager.contractHandler.refundToken(
-      walletProvider,
-      getHexBuffer(reverseSwap.preimageHash),
-      etherSwapValues.amount,
-      etherSwapValues.claimAddress,
-      etherSwapValues.timelock,
-    );
+    try {
+      // const etherSwapValues = await queryEtherSwapValuesFromLock(ethereumManager.etherSwap, reverseSwap.transactionId!);
+      const etherSwapValues = await querySip10SwapValuesFromTx(reverseSwap.transactionId!);
+      const contractTransaction:TxBroadcastResult = await stacksManager.contractHandler.refundToken(
+        walletProvider,
+        getHexBuffer(reverseSwap.preimageHash),
+        etherSwapValues.amount,
+        etherSwapValues.claimAddress,
+        etherSwapValues.timelock,
+      );
 
-    if(!contractTransaction.error) {
-      incrementNonce();
+      if(!contractTransaction.error) {
+        incrementNonce();
+      }
+
+      // this tx contractTransaction may fail in the future - need to handle somehow
+      // for instance it failed because claimstx got in first
+
+      this.logger.info(`Refunded Sip10 of Reverse Swap ${reverseSwap.id} in: ${contractTransaction.txid}`);
+      this.emit(
+        'refund',
+        await this.reverseSwapRepository.setTransactionRefunded(
+          reverseSwap,
+          // calculateEthereumTransactionFee(contractTransaction),
+          0,
+          Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
+        ),
+        contractTransaction.txid,
+      );
+    } catch(error) {
+      this.logger.error('refundSip10 error: ' + error);
     }
 
-    // this tx contractTransaction may fail in the future - need to handle somehow
-    // for instance it failed because claimstx got in first
-
-    this.logger.info(`Refunded Sip10 of Reverse Swap ${reverseSwap.id} in: ${contractTransaction.txid}`);
-    this.emit(
-      'refund',
-      await this.reverseSwapRepository.setTransactionRefunded(
-        reverseSwap,
-        // calculateEthereumTransactionFee(contractTransaction),
-        0,
-        Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
-      ),
-      contractTransaction.txid,
-    );
   }
 
   private refundSip10AS = async (reverseSwap: Swap, chainSymbol: string) => {
