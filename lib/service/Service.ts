@@ -957,6 +957,7 @@ class Service {
 
     const invoiceAmount = this.calculateInvoiceAmount(swap.orderSide, rate, swap.onchainAmount, baseFee, percentageFee);
 
+    console.log('s.960 verifyAmount ', swap.pair, rate, invoiceAmount, swap.orderSide, false);
     this.verifyAmount(swap.pair, rate, invoiceAmount, swap.orderSide, false);
 
     console.log('service.733 getswaprates: ', {
@@ -1161,6 +1162,7 @@ class Service {
     const invoiceAmount = decodeInvoice(invoice).satoshis!;
     const rate = swap.rate || getRate(pairRate, swap.orderSide, false);
 
+    console.log('s.1166 verifyAmount ', swap.pair, rate, invoiceAmount, swap.orderSide, false, invoice);
     this.verifyAmount(swap.pair, rate, invoiceAmount, swap.orderSide, false);
 
     const { baseFee, percentageFee } = this.rateProvider.feeProvider.getFees(
@@ -1452,6 +1454,7 @@ class Service {
       throw Errors.NO_AMOUNT_SPECIFIED();
     }
 
+    console.log('s.1457 verifyAmount ', args.pairId, rate, holdInvoiceAmount, side, true);
     this.verifyAmount(args.pairId, rate, holdInvoiceAmount, side, true);
 
     let prepayMinerFeeInvoiceAmount: number | undefined = undefined;
@@ -1682,6 +1685,7 @@ class Service {
         (!isReverse && orderSide === OrderSide.BUY) ||
         (isReverse && orderSide === OrderSide.SELL)
       ) {
+      console.log('service.1685 ', pairId, rate, amount, orderSide, isReverse);
       // tslint:disable-next-line:no-parameter-reassignment
       amount = Math.floor(amount * rate);
       console.log('s.1320 amount ', amount);
