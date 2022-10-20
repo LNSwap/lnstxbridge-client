@@ -8,7 +8,7 @@ import DiskUsageChecker from './DiskUsageChecker';
 import ReverseSwap from '../db/models/ReverseSwap';
 import BackupScheduler from '../backup/BackupScheduler';
 import { CurrencyType, OrderSide } from '../consts/Enums';
-import { satoshisToCoins } from '../DenominationConverter';
+import { mstxToSTX, satoshisToCoins } from '../DenominationConverter';
 import { ChainInfo, CurrencyInfo, LndInfo } from '../proto/boltzrpc_pb';
 import { CurrencyConfig, NotificationConfig, TokenConfig } from '../Config';
 import {
@@ -134,11 +134,11 @@ class NotificationProvider {
   }
 
   private listenToService = () => {
-    const getSwapTitle = (pair: string, orderSide: OrderSide, isReverse: boolean) => {
+    const getSwapTitle = (pair: string, orderSide: OrderSide, isReverse: boolean, invoice: string | undefined) => {
       const { base, quote } = splitPairId(pair);
       const { sending, receiving } = getSendingReceivingCurrency(base, quote, orderSide);
 
-      return `${receiving}${isReverse ? ' :zap:' : ''} -> ${sending}${!isReverse ? ' :zap:' : ''}`;
+      return `${receiving}${isReverse ? ' :zap:' : ''} -> ${sending}${(!isReverse&&invoice) ? ' :zap:' : ''}`;
     };
 
     const getBasicSwapInfo = (swap: Swap | ReverseSwap, onchainSymbol: string, lightningSymbol: string) => {
@@ -147,11 +147,26 @@ class NotificationProvider {
         `Pair: ${swap.pair}\n` +
         `Order side: ${swap.orderSide === OrderSide.BUY ? 'buy' : 'sell'}`;
 
+      let onchainAmountSymbol = onchainSymbol;
+      if (swap instanceof Swap && swap.asLockupAddress) {
+        onchainAmountSymbol = lightningSymbol;
+      }
+
+      if (swap.onchainAmount) {
+        message += `${swap.onchainAmount ? `\nOnchain amount: ${satoshisToCoins(swap.onchainAmount)} ${onchainAmountSymbol}` : ''}`;
+      }
+
       if (swap.invoice) {
         const lightningAmount = decodeInvoice(swap.invoice).satoshis;
+        message += `\nLightning amount: ${satoshisToCoins(lightningAmount)} ${lightningSymbol}`;
+      }
 
-        message += `${swap.onchainAmount ? `\nOnchain amount: ${satoshisToCoins(swap.onchainAmount)} ${onchainSymbol}` : ''}` +
-          `\nLightning amount: ${satoshisToCoins(lightningAmount)} ${lightningSymbol}`;
+      if (swap instanceof Swap && swap.baseAmount && swap.baseAmount !== satoshisToCoins(swap.onchainAmount || 0)) {
+        message += `${swap.baseAmount ? `\nBase amount: ${swap.baseAmount} ${onchainSymbol}` : ''}`;
+      }
+
+      if (swap instanceof Swap && swap.asRequestedAmount) {
+        message += `${swap.asRequestedAmount ? `\nRequested amount: ${mstxToSTX(swap.asRequestedAmount)} ${lightningSymbol}` : ''}`;
       }
 
       return message;
@@ -183,7 +198,7 @@ class NotificationProvider {
         channelCreation.fundingTransactionId !== null;
 
       // tslint:disable-next-line: prefer-template
-      let message = `**Swap ${getSwapTitle(swap.pair, swap.orderSide, isReverse)}${hasChannelCreation ? ' :construction_site:' : ''}**\n` +
+      let message = `**Swap ${getSwapTitle(swap.pair, swap.orderSide, isReverse, swap.invoice)}${hasChannelCreation ? ' :construction_site:' : ''}**\n` +
         `${getBasicSwapInfo(swap, onchainSymbol, lightningSymbol)}\n` +
         `Fees earned: ${this.numberToDecimal(satoshisToCoins(swap.fee!))} ${onchainSymbol}\n` +
         `Miner fees: ${satoshisToCoins(swap.minerFee!)} ${getMinerFeeSymbol(onchainSymbol)}`;
@@ -209,7 +224,7 @@ class NotificationProvider {
       const { onchainSymbol, lightningSymbol } = getSymbols(swap.pair, swap.orderSide, isReverse);
 
       // tslint:disable-next-line: prefer-template
-      let message = `**Swap ${getSwapTitle(swap.pair, swap.orderSide, isReverse)} failed: ${reason}**\n` +
+      let message = `**Swap ${getSwapTitle(swap.pair, swap.orderSide, isReverse, swap.invoice)} failed: ${reason}**\n` +
         `${getBasicSwapInfo(swap, onchainSymbol, lightningSymbol)}`;
 
       if (isReverse) {
