@@ -14,7 +14,7 @@ import { decodeInvoice, formatError, getChainCurrency, getHexBuffer, splitPairId
 class Migration {
   private versionRepository: DatabaseVersionRepository;
 
-  private static latestSchemaVersion = 4;
+  private static latestSchemaVersion = 5;
 
   constructor(private logger: Logger, private sequelize: Sequelize) {
     this.versionRepository = new DatabaseVersionRepository();
@@ -169,6 +169,14 @@ class Migration {
       case 3:
         this.logUpdatingTable('reverseSwaps');
         await this.sequelize.query('ALTER TABLE reverseSwaps ADD rawTx VARCHAR(1255)');
+
+        await this.finishMigration(versionRow.version, currencies);
+        break;
+
+      // Database schema version 4 adds support for balance table for monitoring
+      case 4:
+        this.logUpdatingTable('balances');
+        // await this.sequelize.query('ALTER TABLE reverseSwaps ADD rawTx VARCHAR(1255)');
 
         await this.finishMigration(versionRow.version, currencies);
         break;
