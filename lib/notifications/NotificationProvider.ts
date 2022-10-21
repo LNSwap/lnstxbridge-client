@@ -138,7 +138,7 @@ class NotificationProvider {
       const { base, quote } = splitPairId(pair);
       const { sending, receiving } = getSendingReceivingCurrency(base, quote, orderSide);
 
-      return `${receiving}${isReverse ? ' :zap:' : ''} -> ${sending}${(!isReverse&&invoice) ? ' :zap:' : ''}`;
+      return `${receiving}${isReverse&&invoice ? ' :zap:' : ''} -> ${sending}${(!isReverse&&invoice) ? ' :zap:' : ''}`;
     };
 
     const getBasicSwapInfo = (swap: Swap | ReverseSwap, onchainSymbol: string, lightningSymbol: string) => {
@@ -233,6 +233,38 @@ class NotificationProvider {
         }
       } else if (swap.invoice) {
         message += `\nInvoice: ${swap.invoice}`;
+      }
+
+      await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
+    });
+
+    // sends discord notifications for liquidity events
+    this.service.eventHandler.on('swap.activity', async (swap, isReverse) => {
+      const { onchainSymbol, lightningSymbol } = getSymbols(swap.pair, swap.orderSide, isReverse);
+      console.log('np.244 swap.activity ', swap, onchainSymbol, lightningSymbol);
+
+      const onchainAmountSymbol = onchainSymbol;
+      let lockedAmount;
+      if(swap.onchainAmount) {
+        lockedAmount = satoshisToCoins(swap.onchainAmount);
+      }
+
+      // when LP locks stx for atomic swap
+      if (swap instanceof Swap && swap.asRequestedAmount) {
+        lockedAmount = mstxToSTX(swap.asRequestedAmount);
+      }
+
+      // if (swap instanceof Swap && swap.asLockupAddress) {
+      //   onchainAmountSymbol = lightningSymbol;
+      // }
+
+      // tslint:disable-next-line: prefer-template
+      let message = `**Swap ${getSwapTitle(swap.pair, swap.orderSide, isReverse, swap.invoice)}**\n` +
+        `ID: ${swap.id}\n` +
+        `Coins locked: ${this.numberToDecimal(lockedAmount)} ${onchainAmountSymbol}\n`;
+
+      if (swap.claimAddress) {
+        message += `Peer: ${swap.claimAddress}`;
       }
 
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);

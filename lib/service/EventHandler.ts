@@ -39,6 +39,9 @@ interface EventHandler {
   on(event: 'swap.failure', listener: (reverseSwap: Swap | ReverseSwap, isReverse: boolean, reason: string) => void): this;
   emit(event: 'swap.failure', reverseSwap: Swap | ReverseSwap, isReverse: boolean, reason: string): boolean;
 
+  on(event: 'swap.activity', listener: (swap: Swap | ReverseSwap, isReverse: boolean) => void): this;
+  emit(event: 'swap.activity', swap: Swap | ReverseSwap, isReverse: boolean): boolean;
+
   on(event: 'channel.backup', listener: (currency: string, channelBackup: string) => void): this;
   emit(event: 'channel.backup', currency: string, channelBackup: string): boolean;
 }
@@ -226,6 +229,7 @@ class EventHandler extends EventEmitter {
 
     this.nursery.on('coins.sent', (reverseSwap, transaction) => {
       this.logger.verbose('eventhandler.166 on coins.sent: ' + stringify(reverseSwap));
+      this.emit('swap.activity', reverseSwap, true);
 
       if (transaction instanceof Transaction) {
         this.logger.verbose('eventhandler.168 on coins.sent: ');
