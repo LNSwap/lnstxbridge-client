@@ -12,6 +12,17 @@ class BalanceRepository {
     });
   }
 
+  public getLatestBalance = (symbol: string): Promise<Balance | null> => {
+    return Balance.findOne({
+      where: {
+        symbol: {
+          [Op.eq]: symbol,
+        }
+      },
+      order: [ [ 'createdAt', 'DESC' ]],
+    });
+  }
+
   public findBalance = async (symbol: string, walletBalance: number, lightningBalance: number): Promise<Balance> => {
     const [balance] = await Balance.findOrCreate({
       where: {
