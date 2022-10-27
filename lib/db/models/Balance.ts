@@ -13,11 +13,12 @@ class Balance extends Model implements BalanceType {
 
   public static load = (sequelize: Sequelize): void => {
     Balance.init({
-      symbol: { type: new DataTypes.STRING(255), primaryKey: true },
+      symbol: { type: new DataTypes.STRING(255) },
       walletBalance: { type: new DataTypes.INTEGER(), allowNull: true },
       lightningBalance: { type: new DataTypes.INTEGER(), allowNull: true },
     }, {
       sequelize,
+      timestamps: true,
       tableName: 'balances',
     });
   }
