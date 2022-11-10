@@ -102,6 +102,8 @@ class Service {
 
   private aggregatorUrl: string;
   private providerUrl: string;
+  private circuitBreakerThreshold: number;
+  private circuitBreakerActive: boolean;
 
   private balancer: Balancer;
   private dashboardConfig: DashboardConfig;
@@ -119,6 +121,8 @@ class Service {
 
     this.aggregatorUrl = config.aggregatorUrl;
     this.providerUrl = config.providerUrl;
+    this.circuitBreakerThreshold = config.circuitBreakerThreshold;
+    this.circuitBreakerActive = false;
 
     setConfig(config);
 
@@ -1839,32 +1843,26 @@ class Service {
             if(symbol === 'BTC') {
               // const btcBefore = await this.balanceRepository.getLatestBalance('BTC');
               // console.log('s.1871 btcBefore ', btcBefore, btcBefore?.walletBalance);
-
               onchainBalance = totalBalance;
               await this.balanceRepository.addBalance({symbol, walletBalance: onchainBalance || 0, lightningBalance: localLNBalance || 0});
             }
 
             if(symbol === 'STX') {
               // const stxBefore = await this.balanceRepository.getLatestBalance('STX');
-
               StxBalance = parseInt(totalBalance+'');
               await this.balanceRepository.addBalance({symbol, walletBalance: StxBalance || 0, lightningBalance: 0});
             }
             if(symbol === 'USDA') {
               // const usdaBefore = await this.balanceRepository.getLatestBalance('USDA');
-
               tokenBalances['USDA'] = parseInt(totalBalance+'');
               await this.balanceRepository.addBalance({symbol, walletBalance: tokenBalances['USDA'] || 0, lightningBalance: 0});
             }
 
             if(symbol === 'XUSD') {
               // const xusdBefore = await this.balanceRepository.getLatestBalance('XUSD');
-
               tokenBalances['XUSD'] = parseInt(totalBalance+'');
               await this.balanceRepository.addBalance({symbol, walletBalance: tokenBalances['XUSD'] || 0, lightningBalance: 0});
             }
-
-            // TODO: compare with previous period and activate circuit breaker based on config flag
 
             // TODO: clean up db to avoid disk issues - purge 1 year old records automatically
 
@@ -1876,6 +1874,62 @@ class Service {
 
 
         });
+
+        let totalBalanceNow = onchainBalance + localLNBalance;
+        const btcstxRate = this.rateProvider.pairs.get('BTC/STX')!.rate;
+        const stxbalanceinbtc = (StxBalance/10**6) / btcstxRate;
+        totalBalanceNow += stxbalanceinbtc*10**8;
+        console.log('s.1882 balances NOW: onchain, ln, stx, totalinbtc', onchainBalance, localLNBalance, StxBalance/10**6, stxbalanceinbtc*10**8, totalBalanceNow);
+
+        // TODO: compare with previous period and activate circuit breaker based on config flag
+        const interval = 24 * 60 * 60; // 24 hours
+        const beforeTimeLowerBound = new Date(Date.now() - 1000 * (interval + 31));
+        const beforeTimeUpperBound = new Date(Date.now() - 1000 * (interval - 30));
+
+        const stxBefore = await this.balanceRepository.getBalance({
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'STX'
+          }
+        });
+        const btcBefore = await this.balanceRepository.getBalance({
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'BTC'
+          }
+        });
+
+        let totalBalanceBefore = (btcBefore?.walletBalance || 0) + (btcBefore?.lightningBalance || 0);
+        const stxbalancebeforeinbtc = ((stxBefore?.walletBalance || 0)/10**6) / btcstxRate;
+        totalBalanceBefore += stxbalanceinbtc*10**8;
+
+        // // test CB feature:
+        // totalBalanceBefore += 100000000;
+
+        console.log('s.1915 balances BEFORE: onchain, ln, stx, totalinbtc', btcBefore?.walletBalance, btcBefore?.lightningBalance, (stxBefore?.walletBalance || 0)/10**6, stxbalancebeforeinbtc*10**8, totalBalanceBefore);
+
+        if ((totalBalanceBefore - totalBalanceNow)*100 / totalBalanceBefore > this.circuitBreakerThreshold) {
+
+          if (!this.circuitBreakerActive) {
+            // send notification to discord! - only once!
+            this.eventHandler.emitCircuitBreakerTriggered(totalBalanceBefore, totalBalanceNow, this.circuitBreakerThreshold);
+          }
+
+          this.circuitBreakerActive = true;
+          this.logger.error('Circuit Breaker Triggered!!!');
+          // trigger circuit breaker because something is wrong with balances!!!
+          // stop and do not register with aggregator - do not serve swaps!
+          return;
+        }
+
+        // stop until LP client is manually restarted even if time passes and balance discrepancy resolves.
+        if (this.circuitBreakerActive) return;
 
         // cap the broadcasted values to configured max in boltz.conf
         // leave this to aggregator for now
