@@ -279,6 +279,12 @@ class NotificationProvider {
 
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
     });
+
+    this.service.eventHandler.on('lp.update', async (balanceBefore, balanceNow, threshold) => {
+      const message = `:warning: :warning: :warning:\n** Circuit Breaker Triggered!!! LP funds dropped more than configured threshold %${threshold} in the last 24 hours.\nTotal Funds Before: ${balanceBefore} sats vs Funds Now: ${balanceNow} sats`;
+      this.logger.error('Sending circuit breaker discord message: ' + message);
+      await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
+    });
   }
 
   private sendLostConnection = async (service: string) => {
