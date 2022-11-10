@@ -44,6 +44,9 @@ interface EventHandler {
 
   on(event: 'channel.backup', listener: (currency: string, channelBackup: string) => void): this;
   emit(event: 'channel.backup', currency: string, channelBackup: string): boolean;
+
+  on(event: 'lp.update', listener: (balanceBefore: number, balanceNow: number, threshold: number) => void): this;
+  emit(event: 'lp.update', balanceBefore: number, balanceNow: number, threshold: number): boolean;
 }
 
 class EventHandler extends EventEmitter {
@@ -74,6 +77,10 @@ class EventHandler extends EventEmitter {
 
   public emitSwapNftMintFailed = (id: string, txId: string): void => {
     this.emit('swap.update', id, { status: SwapUpdateEvent.TransactionFailed, transaction: { id: txId }, });
+  }
+
+  public emitCircuitBreakerTriggered = (balanceBefore: number, balanceNow: number, threshold: number): void => {
+    this.emit('lp.update', balanceBefore, balanceNow, threshold);
   }
 
   /**

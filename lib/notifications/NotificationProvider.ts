@@ -19,6 +19,7 @@ import {
   minutesToMilliseconds,
   getSendingReceivingCurrency,
 } from '../Utils';
+import BalanceRepository from '../db/BalanceRepository';
 
 // TODO: test balance and service alerts
 // TODO: use events instead of intervals to check connections and balances
@@ -31,6 +32,8 @@ class NotificationProvider {
   private discord: DiscordClient;
 
   private disconnected = new Set<string>();
+
+  private balanceRepository = new BalanceRepository();
 
   // This is a Discord hack to add trailing whitespace which is trimmed by default
   private static trailingWhitespace = '\n** **';
@@ -217,6 +220,13 @@ class NotificationProvider {
           `Funding: ${channelCreation!.fundingTransactionId}:${channelCreation!.fundingTransactionVout}`;
       }
 
+      // add current balances after each swap
+      const btcBalance = await this.balanceRepository.getLatestBalance('BTC');
+      const stxBalance = await this.balanceRepository.getLatestBalance('STX');
+      message += `\n\nBTC Onchain Balance: ${btcBalance?.walletBalance}\n` +
+        `BTC Lightning Balance: ${btcBalance?.lightningBalance}\n` +
+        `STX Balance: ${(stxBalance?.walletBalance || 0)/10**6}`;
+
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
     });
 
@@ -267,6 +277,12 @@ class NotificationProvider {
         message += `Peer: ${swap.claimAddress}`;
       }
 
+      await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
+    });
+
+    this.service.eventHandler.on('lp.update', async (balanceBefore, balanceNow, threshold) => {
+      const message = `:warning: :warning: :warning:\n** Circuit Breaker Triggered!!! LP funds dropped more than configured threshold %${threshold} in the last 24 hours.\nTotal Funds Before: ${balanceBefore} sats vs Funds Now: ${balanceNow} sats`;
+      this.logger.error('Sending circuit breaker discord message: ' + message);
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
     });
   }

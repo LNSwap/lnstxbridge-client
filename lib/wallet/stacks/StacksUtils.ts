@@ -104,31 +104,37 @@ export const getAddressBalance = async (address:string) => {
 };
 
 export const getAddressAllBalances = async (initAddress?:string) => {
-  let queryAddress = signerAddress;
-  if(initAddress !== undefined){
-    queryAddress = initAddress;
+  try {
+    let queryAddress = signerAddress;
+    if(initAddress !== undefined){
+      queryAddress = initAddress;
+    }
+    const url = `${coreApiUrl}/extended/v1/address/${queryAddress}/balances`;
+    // console.log("started getAddressAllBalances ", url);
+    const response = await axios.get(url);
+    const respobj = {STX: response.data.stx.balance};
+  
+    // console.log('getAddressAllBalances ft ', response.data.fungible_tokens, response.data.fungible_tokens.length);
+    // console.log('getAddressAllBalances tokens', tokens);
+    const usdaContractAddress = tokens.find((item) => item.symbol === 'USDA').contractAddress;
+    const xusdContractAddress = tokens.find((item) => item.symbol === 'XUSD').contractAddress;
+  
+    // Object.keys(response.data.fungible_tokens).forEach((ft) => {
+    //   console.log('ft key/value ', ft);
+    // });
+  
+    // make this generic so every new SIP10 is automatically discovered
+    // TODO: Not so easy because contract/asset mapping is not trivial
+    if (JSON.stringify(response.data?.fungible_tokens)?.length > 2) {
+      respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda']?.balance;
+      respobj['XUSD'] = response.data.fungible_tokens[xusdContractAddress+'::wrapped-usd']?.balance;
+    }
+    return respobj;
+  } catch (error) {
+    console.log('su.134 error ', error);
+    return {};
   }
-  const url = `${coreApiUrl}/extended/v1/address/${queryAddress}/balances`;
-  // console.log("started getAddressAllBalances ", url);
-  const response = await axios.get(url);
-  const respobj = {STX: response.data.stx.balance};
 
-  // console.log('getAddressAllBalances ft ', response.data.fungible_tokens, response.data.fungible_tokens.length);
-  // console.log('getAddressAllBalances tokens', tokens);
-  const usdaContractAddress = tokens.find((item) => item.symbol === 'USDA').contractAddress;
-  const xusdContractAddress = tokens.find((item) => item.symbol === 'XUSD').contractAddress;
-
-  // Object.keys(response.data.fungible_tokens).forEach((ft) => {
-  //   console.log('ft key/value ', ft);
-  // });
-
-  // make this generic so every new SIP10 is automatically discovered
-  // TODO: Not so easy because contract/asset mapping is not trivial
-  if (JSON.stringify(response.data.fungible_tokens).length > 2) {
-    respobj['USDA'] = response.data.fungible_tokens[usdaContractAddress+'::usda']?.balance;
-    respobj['XUSD'] = response.data.fungible_tokens[xusdContractAddress+'::wrapped-usd']?.balance;
-  }
-  return respobj;
 
   // tokens: [
   //   { symbol: 'STX', maxSwapAmount: 1294967000, minSwapAmount: 10000 },
@@ -174,7 +180,9 @@ export const setStacksNetwork = (network: string, stacksConfig: StacksConfig, de
     wsUrl = 'ws://localhost:3999/extended/v1/ws';
     stacksNetwork = new StacksMocknet();
   } else if (network.includes('testnet')) {
-    coreApiUrl = 'https://stacks-node-api.testnet.stacks.co';
+    // hiro testnet api is aggresively banning + sending 429 errors!!!
+    // coreApiUrl = 'https://stacks-node-api.testnet.stacks.co';
+    coreApiUrl = 'http://localhost:3999';
     // wsUrl = 'wss://stacks-node-api.testnet.stacks.co/extended/v1/ws'
     stacksNetwork = new StacksTestnet();
   } else if (network.includes('regtest')) {
@@ -257,7 +265,7 @@ export const getAccountInfo = async (initAddress: string) => {
     // console.log("stacksutils getInfo", response.data);
     return response.data;
   } catch (e) {
-    console.log('getAccountInfo error: ', e);
+    console.log('getAccountInfo error: ', e.message);
     return {nonce: 0};
   }
 };
@@ -277,7 +285,7 @@ export const getAccountNonce = async (initAddress?: string) => {
       console.log('stacksutils.252 getAccountNonce updating nonce: ', response.data.possible_next_nonce);
       nonce = response.data.possible_next_nonce;
     }
-    if(response.data.detected_missing_nonces.length > 0) {
+    if(response.data?.detected_missing_nonces?.length > 0) {
       // set nonce to min of missing nonces
       const min = Math.min(...response.data.detected_missing_nonces);
       console.log('stacksutils.258 getAccountNonce found missing nonces setting to min ', min);
@@ -317,7 +325,7 @@ export const calculateStxOutTx = async (nftContract:string, contractSignature:st
   const nfturl = `${coreApiUrl}/extended/v1/address/${nftContract}/transactions`;
   const txnresponse = await axios.get(nfturl);
   let claimtx;
-  for (let index = 0; index < txnresponse.data.results.length; index++) {
+  for (let index = 0; index < txnresponse.data?.results?.length; index++) {
     const element = txnresponse.data.results[index];
     if(element.tx_status === 'success' && element.contract_call && element.contract_call.function_name == contractSignature){
       claimtx = element;

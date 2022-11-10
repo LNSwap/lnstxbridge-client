@@ -98,6 +98,7 @@ class Api {
     this.app.route('/api/admin/saveconfiguration').post(controller.saveAdminConfiguration);
     this.app.route('/api/admin/restartapp').post(controller.getAdminRestartApp);
     this.app.route('/api/admin/getmnemonic').get(controller.getAdminMnemonic);
+    this.app.route('/api/admin/balance').post(controller.getAdminHistoricalBalance);
   }
 }
 
