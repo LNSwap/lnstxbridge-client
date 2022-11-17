@@ -47,6 +47,9 @@ interface EventHandler {
 
   on(event: 'lp.update', listener: (balanceBefore: number, balanceNow: number, threshold: number) => void): this;
   emit(event: 'lp.update', balanceBefore: number, balanceNow: number, threshold: number): boolean;
+
+  on(event: 'balance.update', listener: () => void): this;
+  emit(event: 'balance.update'): boolean;
 }
 
 class EventHandler extends EventEmitter {
@@ -81,6 +84,10 @@ class EventHandler extends EventEmitter {
 
   public emitCircuitBreakerTriggered = (balanceBefore: number, balanceNow: number, threshold: number): void => {
     this.emit('lp.update', balanceBefore, balanceNow, threshold);
+  }
+
+  public emitBalanceUpdate = (): void => {
+    this.emit('balance.update');
   }
 
   /**

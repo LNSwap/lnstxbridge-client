@@ -285,6 +285,19 @@ class NotificationProvider {
       this.logger.error('Sending circuit breaker discord message: ' + message);
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
     });
+
+    this.service.eventHandler.on('balance.update', async () => {
+
+      // add current balances after each swap
+      const btcBalance = await this.balanceRepository.getLatestBalance('BTC');
+      const stxBalance = await this.balanceRepository.getLatestBalance('STX');
+      const message = `:info: LP Balance:\nBTC Onchain Balance: ${btcBalance?.walletBalance}\n` +
+        `BTC Lightning Balance: ${btcBalance?.lightningBalance}\n` +
+        `STX Balance: ${(stxBalance?.walletBalance || 0)/10**6}`;
+
+      this.logger.error('Sending lp balance.update: ' + message);
+      await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
+    });
   }
 
   private sendLostConnection = async (service: string) => {
