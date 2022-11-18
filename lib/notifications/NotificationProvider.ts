@@ -286,14 +286,12 @@ class NotificationProvider {
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);
     });
 
-    this.service.eventHandler.on('balance.update', async () => {
+    this.service.eventHandler.on('balance.update', async (onchainBalance: number, localLNBalance: number, stxBalance: number) => {
 
       // add current balances after each swap
-      const btcBalance = await this.balanceRepository.getLatestBalance('BTC');
-      const stxBalance = await this.balanceRepository.getLatestBalance('STX');
-      const message = `:info: LP Balance:\nBTC Onchain Balance: ${btcBalance?.walletBalance}\n` +
-        `BTC Lightning Balance: ${btcBalance?.lightningBalance}\n` +
-        `STX Balance: ${(stxBalance?.walletBalance || 0)/10**6}`;
+      const message = `:information_source: LP Balance:\nBTC Onchain Balance: ${onchainBalance}\n` +
+        `BTC Lightning Balance: ${localLNBalance}\n` +
+        `STX Balance: ${(stxBalance || 0)}`;
 
       this.logger.error('Sending lp balance.update: ' + message);
       await this.discord.sendMessage(`${message}${NotificationProvider.trailingWhitespace}`);

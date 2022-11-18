@@ -1866,13 +1866,6 @@ class Service {
 
             // TODO: clean up db to avoid disk issues - purge 1 year old records automatically
 
-            // Send balance to discord as notification -> this is done inside notification provider after each successful swap
-            // also send it here every 24 hours
-            const now = new Date();
-            if (now.getUTCHours() == 0 && now.getUTCMinutes() == 0) {
-              this.eventHandler.emitBalanceUpdate();
-            }
-
           } catch (error) {
             console.log('s.1864 addbalance error ', error);
           }
@@ -1938,6 +1931,13 @@ class Service {
 
         // cap the broadcasted values to configured max in boltz.conf
         // leave this to aggregator for now
+
+        // Send balance to discord as notification -> this is done inside notification provider after each successful swap
+        // also send it here every 24 hours
+        const now = new Date();
+        if (now.getUTCHours() == 0 && now.getUTCMinutes() == 0) {
+          this.eventHandler.emitBalanceUpdate(onchainBalance, localLNBalance, StxBalance/10**6);
+        }
 
         // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs), tokenBalances);
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {

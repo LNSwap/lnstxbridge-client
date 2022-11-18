@@ -48,8 +48,8 @@ interface EventHandler {
   on(event: 'lp.update', listener: (balanceBefore: number, balanceNow: number, threshold: number) => void): this;
   emit(event: 'lp.update', balanceBefore: number, balanceNow: number, threshold: number): boolean;
 
-  on(event: 'balance.update', listener: () => void): this;
-  emit(event: 'balance.update'): boolean;
+  on(event: 'balance.update', listener: (onchainBalance: number, localLNBalance: number, stxBalance: number) => void): this;
+  emit(event: 'balance.update', onchainBalance: number, localLNBalance: number, stxBalance: number): boolean;
 }
 
 class EventHandler extends EventEmitter {
@@ -86,8 +86,8 @@ class EventHandler extends EventEmitter {
     this.emit('lp.update', balanceBefore, balanceNow, threshold);
   }
 
-  public emitBalanceUpdate = (): void => {
-    this.emit('balance.update');
+  public emitBalanceUpdate = (onchainBalance: number, localLNBalance: number, stxBalance: number): void => {
+    this.emit('balance.update', onchainBalance, localLNBalance, stxBalance);
   }
 
   /**
