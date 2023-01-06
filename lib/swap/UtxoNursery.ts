@@ -269,6 +269,15 @@ class UtxoNursery extends EventEmitter {
       this.logger.verbose(`Found ${confirmed ? '' : 'un'}confirmed lockup transaction for Swap ${swap.id}: ${transaction.getId()}`);
 
       const swapOutput = detectSwap(getHexBuffer(swap.redeemScript!), transaction)!;
+      console.log('un.266 swap vs swapOutput ', swap, swapOutput);
+
+      if(swap.baseAmount && Math.floor(swap.baseAmount * 10**8) > 500) {
+        if (swapOutput.value < (swap.baseAmount * 10**8)) {
+          chainClient.removeOutputFilter(swapOutput.script);
+          this.emit('swap.lockup.failed', swap, Errors.INSUFFICIENT_AMOUNT(swapOutput.value, Math.floor(swap.baseAmount * 10**8)).message);
+          continue;
+        }
+      }
 
       swap = await this.swapRepository.setLockupTransaction(
         swap,

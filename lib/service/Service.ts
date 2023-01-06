@@ -72,6 +72,7 @@ require('events').EventEmitter.defaultMaxListeners = 100;
 import axios from 'axios';
 import { getConfig, setConfig } from '../../lib/consts/Utils';
 import ReverseSwap from '../db/models/ReverseSwap';
+import BalanceRepository from '../db/BalanceRepository';
 
 type LndNodeInfo = {
   nodeKey: string,
@@ -101,9 +102,13 @@ class Service {
 
   private aggregatorUrl: string;
   private providerUrl: string;
+  private circuitBreakerThreshold: number;
+  private circuitBreakerActive: boolean;
 
   private balancer: Balancer;
   private dashboardConfig: DashboardConfig;
+
+  private balanceRepository = new BalanceRepository();
 
   constructor(
     private logger: Logger,
@@ -116,6 +121,8 @@ class Service {
 
     this.aggregatorUrl = config.aggregatorUrl;
     this.providerUrl = config.providerUrl;
+    this.circuitBreakerThreshold = config.circuitBreakerThreshold;
+    this.circuitBreakerActive = false;
 
     setConfig(config);
 
@@ -837,11 +844,11 @@ class Service {
       // verify client-side input
       if (args.quoteAmount && (args.requestedAmount != Math.floor(args.quoteAmount*10**6))) {
         console.log('s.730 VERIFICATION FAILED requestedAmount vs quoteAmount', args.requestedAmount, args.quoteAmount*10**6, args.requestedAmount !== args.quoteAmount*10**6);
-        throw Errors.INVALID_PARAMETER()
+        throw Errors.INVALID_PARAMETER();
       }
       if (expectedAmount < response.submarineSwap.invoiceAmount/10**8) {
         console.log('s.733 VERIFICATION FAILED expectedAmount (user will lock) vs invoiceAmount (operator will pay) ', expectedAmount, response.submarineSwap.invoiceAmount/10**8);
-        throw Errors.WRONG_RATE()
+        throw Errors.WRONG_RATE();
       }
 
       // acceptZeroConf = true;
@@ -957,6 +964,7 @@ class Service {
 
     const invoiceAmount = this.calculateInvoiceAmount(swap.orderSide, rate, swap.onchainAmount, baseFee, percentageFee);
 
+    console.log('s.960 verifyAmount ', swap.pair, rate, invoiceAmount, swap.orderSide, false);
     this.verifyAmount(swap.pair, rate, invoiceAmount, swap.orderSide, false);
 
     console.log('service.733 getswaprates: ', {
@@ -1052,7 +1060,7 @@ class Service {
         throw Errors.WRONG_RATE();
       }
 
-      console.log('service.899 ', 'user requested ', requestedAmount, ' stx/usda for ',  )
+      console.log('service.899 ', 'user requested ', requestedAmount, ' stx/usda for ',  );
 
     } else {
       // requested amount in mstx
@@ -1161,6 +1169,7 @@ class Service {
     const invoiceAmount = decodeInvoice(invoice).satoshis!;
     const rate = swap.rate || getRate(pairRate, swap.orderSide, false);
 
+    console.log('s.1166 verifyAmount ', swap.pair, rate, invoiceAmount, swap.orderSide, false, invoice);
     this.verifyAmount(swap.pair, rate, invoiceAmount, swap.orderSide, false);
 
     const { baseFee, percentageFee } = this.rateProvider.feeProvider.getFees(
@@ -1452,6 +1461,7 @@ class Service {
       throw Errors.NO_AMOUNT_SPECIFIED();
     }
 
+    console.log('s.1457 verifyAmount ', args.pairId, rate, holdInvoiceAmount, side, true);
     this.verifyAmount(args.pairId, rate, holdInvoiceAmount, side, true);
 
     let prepayMinerFeeInvoiceAmount: number | undefined = undefined;
@@ -1644,7 +1654,7 @@ class Service {
     this.logger.verbose(`s.1492 percentageFee ${percentageFee} baseFee ${baseFee}`); // 0.05 baseFee 87025
 
     // add cost + fee, multiply by 100 (mstx -> satoshi), add percentage fee and convert to bitcoin
-    const invoiceAmount = Math.ceil((mintCostStx + baseFee) * 100 * (1+percentageFee) / sendingAmountRate)
+    const invoiceAmount = Math.ceil((mintCostStx + baseFee) * 100 * (1+percentageFee) / sendingAmountRate);
     // const invoiceAmount = this.calculateInvoiceAmount(0, sendingAmountRate, mintCostStx, baseFee, percentageFee);
     this.logger.verbose(`s.1495 invoiceAmount ${invoiceAmount}`);
 
@@ -1656,7 +1666,7 @@ class Service {
     const id = generateId();
     this.directSwapRepository.addDirectSwap({
       id, nftAddress, userAddress, contractSignature, invoice: invoice!.paymentRequest, mintCostStx, status: 'swap.created'
-    })
+    });
     this.eventHandler.emitSwapCreation(id);
 
     // listen to invoice payment
@@ -1670,7 +1680,7 @@ class Service {
     return {
       id,
       invoice: invoice!.paymentRequest
-    }
+    };
   }
 
 
@@ -1682,6 +1692,7 @@ class Service {
         (!isReverse && orderSide === OrderSide.BUY) ||
         (isReverse && orderSide === OrderSide.SELL)
       ) {
+      console.log('service.1685 ', pairId, rate, amount, orderSide, isReverse);
       // tslint:disable-next-line:no-parameter-reassignment
       amount = Math.floor(amount * rate);
       console.log('s.1320 amount ', amount);
@@ -1812,16 +1823,13 @@ class Service {
         let remoteLNBalance = 0;
         let onchainBalance = 0;
         let StxBalance = 0;
-        let tokenBalances = {};
+        const tokenBalances = {};
         // let UsdaBalance = 0;
-        balances.forEach((balance: Balance, symbol: string) => {
+        balances.forEach(async (balance: Balance, symbol: string) => {
           // console.log('balance, symbol ', balance, symbol);
           const totalBalance = balance.getWalletBalance()!.getTotalBalance();
           console.log('symbol, totalBalance ', symbol, totalBalance);
-          if(symbol === 'BTC') onchainBalance = totalBalance;
-          if(symbol === 'STX') StxBalance = parseInt(totalBalance+'');
-          if(symbol === 'USDA') tokenBalances['USDA'] = parseInt(totalBalance+'');
-          if(symbol === 'XUSD') tokenBalances['XUSD'] = parseInt(totalBalance+'');
+
           const lightningBalance = balance.getLightningBalance();
           if(lightningBalance) {
             localLNBalance = lightningBalance.getLocalBalance();
@@ -1829,10 +1837,107 @@ class Service {
             // console.log('local lightningBalance', localLNBalance);
             // console.log('remote lightningBalance ', remoteLNBalance);
           }
+
+          try {
+            // add data to balances table in DB so it can be exposed via API and used for monitoring/circuit breaker
+            if(symbol === 'BTC') {
+              // const btcBefore = await this.balanceRepository.getLatestBalance('BTC');
+              // console.log('s.1871 btcBefore ', btcBefore, btcBefore?.walletBalance);
+              onchainBalance = totalBalance;
+              await this.balanceRepository.addBalance({symbol, walletBalance: onchainBalance || 0, lightningBalance: localLNBalance || 0});
+            }
+
+            if(symbol === 'STX') {
+              // const stxBefore = await this.balanceRepository.getLatestBalance('STX');
+              StxBalance = parseInt(totalBalance+'');
+              await this.balanceRepository.addBalance({symbol, walletBalance: StxBalance || 0, lightningBalance: 0});
+            }
+            if(symbol === 'USDA') {
+              // const usdaBefore = await this.balanceRepository.getLatestBalance('USDA');
+              tokenBalances['USDA'] = parseInt(totalBalance+'');
+              await this.balanceRepository.addBalance({symbol, walletBalance: tokenBalances['USDA'] || 0, lightningBalance: 0});
+            }
+
+            if(symbol === 'XUSD') {
+              // const xusdBefore = await this.balanceRepository.getLatestBalance('XUSD');
+              tokenBalances['XUSD'] = parseInt(totalBalance+'');
+              await this.balanceRepository.addBalance({symbol, walletBalance: tokenBalances['XUSD'] || 0, lightningBalance: 0});
+            }
+
+            // TODO: clean up db to avoid disk issues - purge 1 year old records automatically
+
+          } catch (error) {
+            console.log('s.1864 addbalance error ', error);
+          }
+
+
         });
+
+        let totalBalanceNow = onchainBalance + localLNBalance;
+        const btcstxRate = this.rateProvider.pairs.get('BTC/STX')!.rate;
+        const stxbalanceinbtc = (StxBalance/10**6) / btcstxRate;
+        totalBalanceNow += stxbalanceinbtc*10**8;
+        console.log('s.1882 balances NOW: onchain, ln, stx, totalinbtc', onchainBalance, localLNBalance, StxBalance/10**6, stxbalanceinbtc*10**8, totalBalanceNow);
+
+        // TODO: compare with previous period and activate circuit breaker based on config flag
+        const interval = 24 * 60 * 60; // 24 hours
+        const beforeTimeLowerBound = new Date(Date.now() - 1000 * (interval + 31));
+        const beforeTimeUpperBound = new Date(Date.now() - 1000 * (interval - 30));
+
+        const stxBefore = await this.balanceRepository.getBalance({
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'STX'
+          }
+        });
+        const btcBefore = await this.balanceRepository.getBalance({
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'BTC'
+          }
+        });
+
+        let totalBalanceBefore = (btcBefore?.walletBalance || 0) + (btcBefore?.lightningBalance || 0);
+        const stxbalancebeforeinbtc = ((stxBefore?.walletBalance || 0)/10**6) / btcstxRate;
+        totalBalanceBefore += stxbalanceinbtc*10**8;
+
+        // // test CB feature:
+        // totalBalanceBefore += 100000000;
+
+        console.log('s.1915 balances BEFORE: onchain, ln, stx, totalinbtc', btcBefore?.walletBalance, btcBefore?.lightningBalance, (stxBefore?.walletBalance || 0)/10**6, stxbalancebeforeinbtc*10**8, totalBalanceBefore);
+
+        if ((totalBalanceBefore - totalBalanceNow)*100 / totalBalanceBefore > this.circuitBreakerThreshold) {
+
+          if (!this.circuitBreakerActive) {
+            // send notification to discord! - only once!
+            this.eventHandler.emitCircuitBreakerTriggered(totalBalanceBefore, totalBalanceNow, this.circuitBreakerThreshold);
+          }
+
+          this.circuitBreakerActive = true;
+          this.logger.error('Circuit Breaker Triggered!!!');
+          // trigger circuit breaker because something is wrong with balances!!!
+          // stop and do not register with aggregator - do not serve swaps!
+          return;
+        }
+
+        // stop until LP client is manually restarted even if time passes and balance discrepancy resolves.
+        if (this.circuitBreakerActive) return;
 
         // cap the broadcasted values to configured max in boltz.conf
         // leave this to aggregator for now
+
+        // Send balance to discord as notification -> this is done inside notification provider after each successful swap
+        // also send it here every 24 hours
+        const now = new Date();
+        if (now.getUTCHours() == 0 && now.getUTCMinutes() == 0) {
+          this.eventHandler.emitBalanceUpdate(onchainBalance, localLNBalance, StxBalance/10**6);
+        }
 
         // console.log('service.1774 joinAggregator ', stacksAddress, nodeId, this.providerUrl, dbPairs, mapToObject(dbPairs.pairs), tokenBalances);
         const response = await axios.post(`${this.aggregatorUrl}/registerclient`, {
@@ -2019,13 +2124,163 @@ class Service {
   public getAdminBalanceStacks = async (): Promise<{walletName: string, value: string, address: string}[]> => {
     const data = await getAddressAllBalances();
     const signerAddress = (await getStacksNetwork()).signerAddress;
-    let respArray: {walletName: string, value: string, address: string}[] = [];
+    const respArray: {walletName: string, value: string, address: string}[] = [];
     Object.keys(data).forEach((key) => {
       respArray.push({walletName: key, value: data[key], address: signerAddress});
     });
     return respArray;
   }
 
+  // TODO: Delete - probably not needed as an admin endpoint!
+  // Calculate total LP balance over interval seconds and return a BTC normalized value
+  // why return normalized value? we should return values separately
+  // interval: number
+  public getAdminNormalizedBalance = async (): Promise<{balance: string, delta: string}> => {
+    try {
+      const interval = 0;
+      const data = await getAddressAllBalances();
+      // const signerAddress = (await getStacksNetwork()).signerAddress;
+      let balanceOnchain = 0;
+      let balanceLN = 0;
+      const balanceHolder = data;
+      let totalBalanceNow = 0; // in BTC
+      console.log('s.2065 balanceHolder ', balanceHolder);
+
+      // // const respArray: {walletName: string, value: string, address: string}[] = [];
+      // Object.keys(data).forEach((key) => {
+      //   if(key === 'STX' {
+      //     balanceObject['STX'] = data[key]
+      //   })
+      //   respArray.push({walletName: key, value: data[key], address: signerAddress});
+      // });
+
+      const balances = (await this.getBalance()).getBalancesMap();
+      balances.forEach((balance: Balance, symbol: string) => {
+        if(symbol === 'BTC')
+        balanceOnchain = balance.getWalletBalance()!.getTotalBalance();
+
+        const lightningBalance = balance.getLightningBalance();
+        if (lightningBalance) {
+          balanceLN = lightningBalance.getLocalBalance();
+        }
+      });
+
+      balanceHolder['BTC'] = balanceOnchain;
+      balanceHolder['LN'] = balanceLN;
+      totalBalanceNow += balanceOnchain + balanceLN;
+
+      const btcstxRate = this.rateProvider.pairs.get('BTC/STX')!.rate;
+      const stxbalanceinbtc = balanceHolder['STX'] / btcstxRate;
+      totalBalanceNow += stxbalanceinbtc;
+      console.log('s.2096 onchain, ln, stx, totalinbtc', balanceOnchain, balanceLN, balanceHolder['STX'], totalBalanceNow);
+
+      // Check balances interval seconds ago
+      const beforeTimeLowerBound = new Date(Date.now() - 1000 * (interval + 31));
+      const beforeTimeUpperBound = new Date(Date.now() - 1000 * (interval - 30));
+      const stxBefore = await this.balanceRepository.getBalance({
+        where: {
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'STX'
+          }
+        }
+      });
+      const onchainBefore = await this.balanceRepository.getBalance({
+        where: {
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'BTC'
+          }
+        }
+      });
+      const lnBefore = await this.balanceRepository.getBalance({
+        where: {
+          updatedAt: {
+            [Op.lte]: beforeTimeUpperBound,
+            [Op.gte]: beforeTimeLowerBound,
+          },
+          symbol: {
+            [Op.eq]: 'LN'
+          }
+        }
+      });
+      console.log('s.2112 onchain, ln, stx, totalinbtc', onchainBefore, lnBefore, stxBefore, );
+
+      // compare and return the diff
+
+      return {
+        balance: '0',
+        delta: '0',
+      };
+    } catch (error) {
+      this.logger.error('getAdminBalance error: ' + error.message);
+      return {
+        balance: '0',
+        delta: '0',
+      };
+    }
+
+  }
+
+  // Returns historical balance from DB
+  public getAdminHistoricalBalance = async (symbol: string, interval: number): Promise<string> => {
+    try {
+      let balanceBefore;
+      let balance = 'N/A';
+      // Check balances interval seconds ago
+      const beforeTimeLowerBound = new Date(Date.now() - 1000 * (interval + 31));
+      const beforeTimeUpperBound = new Date(Date.now() - 1000 * (interval - 30));
+      switch (symbol) {
+        case 'STX':
+          balanceBefore = await this.balanceRepository.getBalance(
+            {
+              updatedAt: {
+                [Op.lte]: beforeTimeUpperBound,
+                [Op.gte]: beforeTimeLowerBound,
+              },
+              symbol: {
+                [Op.eq]: 'STX'
+              }
+            }
+          );
+          balance = balanceBefore.walletBalance;
+          break;
+
+        case 'BTC':
+        case 'LN':
+          balanceBefore = await this.balanceRepository.getBalance(
+            {
+              updatedAt: {
+                [Op.lte]: beforeTimeUpperBound,
+                [Op.gte]: beforeTimeLowerBound,
+              },
+              symbol: {
+                [Op.eq]: 'BTC'
+              }
+            }
+          );
+          balance = symbol === 'BTC' ? balanceBefore.walletBalance : balanceBefore.lightningBalance;
+          break;
+
+        default:
+          break;
+      }
+      return balance;
+    } catch (error) {
+      this.logger.error('getAdminHistoricalBalance error: ' + error.message);
+      return 'N/A';
+    }
+
+  }
+
 }
+
+
 
 export default Service;

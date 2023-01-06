@@ -39,8 +39,17 @@ interface EventHandler {
   on(event: 'swap.failure', listener: (reverseSwap: Swap | ReverseSwap, isReverse: boolean, reason: string) => void): this;
   emit(event: 'swap.failure', reverseSwap: Swap | ReverseSwap, isReverse: boolean, reason: string): boolean;
 
+  on(event: 'swap.activity', listener: (swap: Swap | ReverseSwap, isReverse: boolean) => void): this;
+  emit(event: 'swap.activity', swap: Swap | ReverseSwap, isReverse: boolean): boolean;
+
   on(event: 'channel.backup', listener: (currency: string, channelBackup: string) => void): this;
   emit(event: 'channel.backup', currency: string, channelBackup: string): boolean;
+
+  on(event: 'lp.update', listener: (balanceBefore: number, balanceNow: number, threshold: number) => void): this;
+  emit(event: 'lp.update', balanceBefore: number, balanceNow: number, threshold: number): boolean;
+
+  on(event: 'balance.update', listener: (onchainBalance: number, localLNBalance: number, stxBalance: number) => void): this;
+  emit(event: 'balance.update', onchainBalance: number, localLNBalance: number, stxBalance: number): boolean;
 }
 
 class EventHandler extends EventEmitter {
@@ -71,6 +80,14 @@ class EventHandler extends EventEmitter {
 
   public emitSwapNftMintFailed = (id: string, txId: string): void => {
     this.emit('swap.update', id, { status: SwapUpdateEvent.TransactionFailed, transaction: { id: txId }, });
+  }
+
+  public emitCircuitBreakerTriggered = (balanceBefore: number, balanceNow: number, threshold: number): void => {
+    this.emit('lp.update', balanceBefore, balanceNow, threshold);
+  }
+
+  public emitBalanceUpdate = (onchainBalance: number, localLNBalance: number, stxBalance: number): void => {
+    this.emit('balance.update', onchainBalance, localLNBalance, stxBalance);
   }
 
   /**
@@ -226,6 +243,7 @@ class EventHandler extends EventEmitter {
 
     this.nursery.on('coins.sent', (reverseSwap, transaction) => {
       this.logger.verbose('eventhandler.166 on coins.sent: ' + stringify(reverseSwap));
+      this.emit('swap.activity', reverseSwap, true);
 
       if (transaction instanceof Transaction) {
         this.logger.verbose('eventhandler.168 on coins.sent: ');

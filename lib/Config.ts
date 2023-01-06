@@ -181,6 +181,7 @@ type ConfigType = {
   swapwitnessaddress: boolean;
   aggregatorUrl: string;
   providerUrl: string;
+  circuitBreakerThreshold: number;
 
   api: ApiConfig;
   grpc: GrpcConfig;
@@ -252,6 +253,7 @@ class Config {
 
       aggregatorUrl: 'http://localhost:9002',
       providerUrl: 'http://localhost:9008',
+      circuitBreakerThreshold: 25,
 
       api: {
         host: '0.0.0.0',
@@ -492,6 +494,7 @@ class Config {
     if(process.env.APP_PASSWORD) this.config.dashboard.password = process.env.APP_PASSWORD;
     if(process.env.APP_HIDDEN_SERVICE) this.config.providerUrl = `http://${process.env.APP_HIDDEN_SERVICE}:${process.env.APP_PORT || '9008'}`;
     if(process.env.APP_PORT) this.config.api.port = Number(process.env.APP_PORT);
+    if(process.env.CIRCUIT_BREAKER_THRESHOLD) this.config.circuitBreakerThreshold = Number(process.env.CIRCUIT_BREAKER_THRESHOLD);
     console.log('config.486 merged data from env variables and set final config: ', JSON.stringify(this.config));
 
     return this.config;

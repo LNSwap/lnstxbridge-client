@@ -115,11 +115,15 @@ export const decodeInvoice = (invoice: string): bolt11.PaymentRequestObject & {
     }
   }
 
+  let satoshis = decoded.satoshis || 0;
+  if(!decoded.satoshis && decoded.millisatoshis) {
+    satoshis = Math.floor(parseInt(decoded.millisatoshis) / 1000);
+  }
   return {
     ...decoded,
     paymentHash: payment_hash,
     routingInfo: routing_info,
-    satoshis: decoded.satoshis || 0,
+    satoshis: satoshis,
   };
 };
 

@@ -687,6 +687,26 @@ class Controller {
     this.successResponse(res, data);
   }
 
+  public getAdminHistoricalBalance = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authHeader = req.headers['authorization'];
+      if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+        this.errorResponse(req, res, 'unauthorized');
+        return;
+      }
+
+      const { symbol, interval } = this.validateRequest(req.body, [
+        { name: 'symbol', type: 'string' },
+        { name: 'interval', type: 'number' },
+      ]);
+      const data = await this.service.getAdminHistoricalBalance(symbol, interval);
+      this.successResponse(res, data);
+    } catch (error) {
+      this.errorResponse(req, res, 'request error');
+      return;
+    }
+  }
+
   public getAdminConfiguration = async (req: Request, res: Response): Promise<void> => {
     const authHeader = req.headers['authorization'];
     if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
@@ -705,7 +725,7 @@ class Controller {
       this.errorResponse(req, res, 'unauthorized');
       return;
     }
-    console.log('controller.704 saveAdminConfiguration ', req.body);
+    // console.log('controller.704 saveAdminConfiguration ', req.body);
     const { config } = this.validateRequest(req.body, [
       { name: 'config', type: 'object' },
     ]);
