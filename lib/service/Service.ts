@@ -1421,7 +1421,7 @@ class Service {
       // convert from mstx to boltz default 10**8
       baseFee = Math.round(baseFee * 100);
     }
-    // console.log('service.1375 createreverseswap rate, feePercent, baseFee: ', rate, feePercent, baseFee);
+    console.log('service.1375 createreverseswap rate, feePercent, baseFee: ', rate, feePercent, baseFee);
 
     let onchainAmount: number;
     let holdInvoiceAmount: number;
@@ -1456,7 +1456,7 @@ class Service {
       holdInvoiceAmount = Math.ceil(holdInvoiceAmount);
 
       percentageFee = Math.ceil(holdInvoiceAmount * rate * feePercent);
-      // console.log('service.1410 createreverseswap onchainAmount, holdInvoiceAmount, percentageFee: ', onchainAmount, args.onchainAmount + baseFee, holdInvoiceAmount, percentageFee);
+      console.log('service.1410 createreverseswap onchainAmount, holdInvoiceAmount, percentageFee: ', onchainAmount, args.onchainAmount + baseFee, holdInvoiceAmount, percentageFee);
     } else {
       throw Errors.NO_AMOUNT_SPECIFIED();
     }
