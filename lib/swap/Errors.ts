@@ -47,8 +47,8 @@ export default {
     message: 'invoice could not be paid',
     code: concatErrorCode(ErrorCodePrefix.Swap, 10),
   }),
-  REFUNDED_COINS: (refundedTransactionId: string): Error => ({
-    message: `refunded onchain coins: ${refundedTransactionId}`,
+  REFUNDED_COINS: (refundedTransactionId: string, refundTransactionId?: string): Error => ({
+    message: `refunded onchain coins: ${refundedTransactionId} - ${refundTransactionId}`,
     code: concatErrorCode(ErrorCodePrefix.Swap, 11),
   }),
   ONCHAIN_HTLC_TIMED_OUT: (): Error => ({
