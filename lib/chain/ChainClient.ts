@@ -196,7 +196,7 @@ class ChainClient extends BaseClient {
         mempoolSpace: this.mempoolSpace.latestFee,
       })}`);
 
-      return Math.max(this.mempoolSpace.latestFee, 2);
+      return Math.max(this.mempoolSpace.latestFee, 4);
     } else {
       return chainClientFee;
     }
