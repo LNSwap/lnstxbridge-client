@@ -942,6 +942,87 @@ export const sendSTX = async (address:string, amount: number, memo: string) => {
   return txId;
 };
 
+export const directCallStx = async (contract:string, functionName:string, amount: string, timelock: string, preimageHash?: Buffer, preimage?: Buffer, claimPrincipal?: string):Promise<any> => {
+  try {
+    const contractAddress = contract.split('.')[0];
+    const contractName = contract.split('.')[1];
+
+    amount = unHex(amount);
+    timelock = unHex(timelock);
+    // const preimageorhash = preimageHash ? getHexString(preimageHash) : getHexString(preimage!)
+    const decimalamount = parseInt(amount.toString(),10);
+    // console.log('calculateStacksTxFee.428 start ', functionName, preimageorhash, amount, timelock)
+
+    const postConditionCode = FungibleConditionCode.GreaterEqual;
+    const postConditionAmount = new BigNum(decimalamount);
+    const postConditions = [
+      makeContractSTXPostCondition(
+        contractAddress,
+        contractName,
+        postConditionCode,
+        postConditionAmount
+      )
+    ];
+
+    let functionArgs: any[] = [];
+    if(functionName.includes('lockStx')) {
+      functionArgs = [
+        bufferCV(preimageHash!),
+        bufferCV(Buffer.from(amount,'hex')),
+        bufferCV(Buffer.from('01','hex')),
+        bufferCV(Buffer.from('01','hex')),
+        bufferCV(Buffer.from(timelock,'hex')),
+        standardPrincipalCV(claimPrincipal!),
+      ];
+    } else if(functionName.includes('refundStx')) {
+      functionArgs = [
+        bufferCV(preimageHash!),
+        bufferCV(Buffer.from(amount,'hex')),
+        bufferCV(Buffer.from('01','hex')),
+        bufferCV(Buffer.from('01','hex')),
+        bufferCV(Buffer.from(timelock,'hex')),
+      ];
+    } else {
+      functionArgs = [
+        bufferCV(preimage!),
+        bufferCV(Buffer.from(amount,'hex')),
+        bufferCV(Buffer.from('01','hex')),
+        bufferCV(Buffer.from('01','hex')),
+        bufferCV(Buffer.from(timelock,'hex')),
+      ];
+    }
+
+    console.log("stacksutil.960 functionargs: ", functionName, JSON.stringify(functionArgs));
+
+    const txOptions = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs: functionArgs,
+      senderKey: getStacksNetwork().privateKey,
+      // validateWithAbi: true,
+      network: stacksNetwork,
+      postConditionMode: PostConditionMode.Allow,
+      postConditions,
+      anchorMode: AnchorMode.Any,
+      onFinish: data => {
+        console.log('Stacks remote Transaction:', JSON.stringify(data));
+      }
+    };
+
+    const transaction = await makeContractCall(txOptions);
+    // console.log("stacksutil.209 transaction: ", transaction, transaction.payload)
+
+    const broadcastResponse = await broadcastTransaction(transaction, stacksNetwork);
+    const txId = broadcastResponse.txid;
+    console.log('stacksutil.690 directrefund txId: ', txId);
+    return txId;
+  } catch (err) {
+    console.log('stacksutils.1012 calculateStacksTxFee err ', functionName, err.message);
+    return false;
+  }
+};
+
 export function unHex(input) {
   if(input.slice(0,2) === '0x') {
     return input.slice(2);

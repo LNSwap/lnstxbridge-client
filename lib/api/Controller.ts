@@ -769,6 +769,18 @@ class Controller {
     this.successResponse(res, data);
   }
 
+  public postAdminRefundStacks = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || authHeader !== this.service.getAdminDashboardAuth()) {
+      this.errorResponse(req, res, 'unauthorized');
+      return;
+    }
+    const { id } = this.validateRequest(req.body, [
+      { name: 'id', type: 'string' },
+    ]);
+    const data = await this.service.postAdminRefundStacks(id);
+    this.successResponse(res, data);
+  }
 }
 
 export default Controller;

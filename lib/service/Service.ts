@@ -20,7 +20,7 @@ import { Network } from '../wallet/ethereum/EthereumManager';
 import RateProvider, { PairType } from '../rates/RateProvider';
 import { getGasPrice } from '../wallet/ethereum/EthereumUtils';
 // mintNFTforUser
-import { calculateStxOutTx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, sponsorTx } from '../wallet/stacks/StacksUtils';
+import { calculateStxOutTx, directCallStx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, sponsorTx } from '../wallet/stacks/StacksUtils';
 import WalletManager, { Currency } from '../wallet/WalletManager';
 import SwapManager, { ChannelCreationInfo } from '../swap/SwapManager';
 // etherDecimals, ethereumPrepayMinerFeeGasLimit,
@@ -2277,6 +2277,19 @@ class Service {
       return 'N/A';
     }
 
+  }
+
+  public postAdminRefundStacks = async (id: string): Promise<{refundTxId: string}> => {
+    // refund swap
+    const swap = await this.swapManager.swapRepository.getSwap({
+      id: {
+        [Op.eq]: id,
+      },
+    });
+    if(!swap) throw new Error('Swap not found');
+    console.log('service.2366 refunding swap ', swap.id, swap.preimageHash, swap.lockupAddress);
+    const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
+    return refundTxId;
   }
 
 }
