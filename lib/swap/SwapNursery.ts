@@ -1882,6 +1882,7 @@ class SwapNursery extends EventEmitter {
 
   private expireSwap = async (swap: Swap) =>  {
     // Check "expireReverseSwap" for reason
+    console.log('swapnursery.1730 expireSwap triggered', swap.id, swap.status);
     const queriedSwap = await this.swapRepository.getSwap({
       id: {
         [Op.eq]: swap.id,
@@ -1890,7 +1891,7 @@ class SwapNursery extends EventEmitter {
 
     if (queriedSwap!.status === SwapUpdateEvent.SwapExpired || queriedSwap!.status === SwapUpdateEvent.TransactionRefunded ) {
       // refunded added to avoid 2 x refundutxoAS
-      // this.logger.verbose('swapnursery expireSwap returning without refunding '+ swap.id);
+      this.logger.verbose('swapnursery expireSwap returning without refunding '+ swap.id);
       return;
     }
 
@@ -2297,6 +2298,12 @@ class SwapNursery extends EventEmitter {
       ),
       contractTransaction.hash,
     );
+  }
+
+  public manualExpireSwap = async (swap: Swap|ReverseSwap) => {
+    await this.lock.acquire(SwapNursery.swapLock, async () => {
+      await this.expireSwap(swap);
+    });
   }
 }
 

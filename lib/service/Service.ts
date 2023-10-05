@@ -2281,15 +2281,37 @@ class Service {
 
   public postAdminRefundStacks = async (id: string): Promise<{refundTxId: string}> => {
     // refund swap
+    let swap = await this.swapManager.swapRepository.getSwap({
+      id: {
+        [Op.eq]: id,
+      },
+    });
+    if(!swap) {
+      swap = await this.swapManager.reverseSwapRepository.getReverseSwap({
+        id: {
+          [Op.eq]: id,
+        },
+      });
+    }
+    if(!swap) throw new Error('Stacks Swap not found');
+    console.log('service.2366 refunding swap ', swap.id, swap.preimageHash, swap.lockupAddress);
+    const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
+    // this.eventHandler.emitSwapExpired(swap);
+    return refundTxId;
+  }
+
+  public postAdminRefundBitcoin = async (id: string): Promise<{triggered: boolean}> => {
+    // refund swap
     const swap = await this.swapManager.swapRepository.getSwap({
       id: {
         [Op.eq]: id,
       },
     });
-    if(!swap) throw new Error('Swap not found');
-    console.log('service.2366 refunding swap ', swap.id, swap.preimageHash, swap.lockupAddress);
-    const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
-    return refundTxId;
+    if(!swap) throw new Error('Bitcoin Swap not found');
+    console.log('service.2303 refunding swap ', swap.id, swap.preimageHash, swap.asLockupAddress);
+    this.eventHandler.emitSwapExpired(swap);
+    // const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
+    return { triggered: true };
   }
 
 }
