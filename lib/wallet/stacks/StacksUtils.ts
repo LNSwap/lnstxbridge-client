@@ -944,7 +944,8 @@ export const sendSTX = async (address:string, amount: number, memo: string) => {
 
 export const directCallStx = async (contract:string, functionName:string, amount: string, timelock: string, preimageHash?: Buffer, preimage?: Buffer, claimPrincipal?: string):Promise<any> => {
   try {
-    const contractAddress = contract.split('.')[0];
+    console.log('stacksutils.1012 directCallStx ', contract, functionName, amount, timelock, preimageHash, preimage, claimPrincipal)
+    const contractAddress = contract.split('.')[0].toUpperCase();
     const contractName = contract.split('.')[1];
 
     amount = unHex(amount);
@@ -963,33 +964,29 @@ export const directCallStx = async (contract:string, functionName:string, amount
         postConditionAmount
       )
     ];
+    console.log('stacksutils.967 directCallStx postConditions ', postConditions)
 
+    let fee = new BigNum(10000);
     let functionArgs: any[] = [];
     if(functionName.includes('lockStx')) {
       functionArgs = [
         bufferCV(preimageHash!),
         bufferCV(Buffer.from(amount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
         bufferCV(Buffer.from(timelock,'hex')),
         standardPrincipalCV(claimPrincipal!),
       ];
+      fee = new BigNum(lockStxCost);
     } else if(functionName.includes('refundStx')) {
       functionArgs = [
         bufferCV(preimageHash!),
-        bufferCV(Buffer.from(amount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from(timelock,'hex')),
       ];
+      fee = new BigNum(refundStxCost);
     } else {
       functionArgs = [
         bufferCV(preimage!),
         bufferCV(Buffer.from(amount,'hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from('01','hex')),
-        bufferCV(Buffer.from(timelock,'hex')),
       ];
+      fee = new BigNum(claimStxCost);
     }
 
     console.log("stacksutil.960 functionargs: ", functionName, JSON.stringify(functionArgs));
@@ -1001,6 +998,7 @@ export const directCallStx = async (contract:string, functionName:string, amount
       functionArgs: functionArgs,
       senderKey: getStacksNetwork().privateKey,
       // validateWithAbi: true,
+      fee,
       network: stacksNetwork,
       postConditionMode: PostConditionMode.Allow,
       postConditions,
@@ -1010,12 +1008,14 @@ export const directCallStx = async (contract:string, functionName:string, amount
       }
     };
 
+    console.log('stacksutils.1020 directCallStx txOptions ', txOptions)
+
     const transaction = await makeContractCall(txOptions);
-    // console.log("stacksutil.209 transaction: ", transaction, transaction.payload)
+    console.log("stacksutil.209 transaction: ", transaction, transaction.payload)
 
     const broadcastResponse = await broadcastTransaction(transaction, stacksNetwork);
     const txId = broadcastResponse.txid;
-    console.log('stacksutil.690 directrefund txId: ', txId);
+    console.log('stacksutil.690 directrefund txId: ', broadcastResponse, txId);
     return txId;
   } catch (err) {
     console.log('stacksutils.1012 calculateStacksTxFee err ', functionName, err.message);
