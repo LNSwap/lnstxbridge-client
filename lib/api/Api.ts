@@ -100,6 +100,7 @@ class Api {
     this.app.route('/api/admin/getmnemonic').get(controller.getAdminMnemonic);
     this.app.route('/api/admin/balance').post(controller.getAdminHistoricalBalance);
     this.app.route('/api/admin/stacks/refund').post(controller.postAdminRefundStacks);
+    this.app.route('/api/admin/bitcoin/refund').post(controller.postAdminRefundBitcoin);
   }
 }
 
