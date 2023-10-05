@@ -999,6 +999,7 @@ export const directCallStx = async (contract:string, functionName:string, amount
       senderKey: getStacksNetwork().privateKey,
       // validateWithAbi: true,
       fee,
+      nonce: new BigNum(nonce),
       network: stacksNetwork,
       postConditionMode: PostConditionMode.Allow,
       postConditions,
