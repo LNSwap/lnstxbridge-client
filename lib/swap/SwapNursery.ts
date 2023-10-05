@@ -1882,6 +1882,7 @@ class SwapNursery extends EventEmitter {
 
   private expireSwap = async (swap: Swap) =>  {
     // Check "expireReverseSwap" for reason
+    console.log('swapnursery.1730 expireSwap triggered', swap.id, swap.status);
     const queriedSwap = await this.swapRepository.getSwap({
       id: {
         [Op.eq]: swap.id,
@@ -1890,7 +1891,7 @@ class SwapNursery extends EventEmitter {
 
     if (queriedSwap!.status === SwapUpdateEvent.SwapExpired || queriedSwap!.status === SwapUpdateEvent.TransactionRefunded ) {
       // refunded added to avoid 2 x refundutxoAS
-      // this.logger.verbose('swapnursery expireSwap returning without refunding '+ swap.id);
+      this.logger.verbose('swapnursery expireSwap returning without refunding '+ swap.id);
       return;
     }
 
@@ -2032,7 +2033,7 @@ class SwapNursery extends EventEmitter {
     this.logger.info(`Refunded ${chainSymbol} of Reverse Swap ${reverseSwap.id} in: ${refundTransaction.getId()}`);
     this.emit(
       'refund',
-      await this.reverseSwapRepository.setTransactionRefunded(reverseSwap, minerFee, Errors.REFUNDED_COINS(reverseSwap.transactionId!).message),
+      await this.reverseSwapRepository.setTransactionRefunded(reverseSwap, minerFee, Errors.REFUNDED_COINS(reverseSwap.transactionId!, refundTransaction.getId()).message),
       refundTransaction.getId(),
     );
   }
@@ -2081,7 +2082,7 @@ class SwapNursery extends EventEmitter {
     this.logger.info(`Refunded ${chainSymbol} of Reverse Swap ${reverseSwap.id} in: ${refundTransaction.getId()}`);
     this.emit(
       'refund',
-      await this.swapRepository.setTransactionRefunded(reverseSwap, Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!).message),
+      await this.swapRepository.setTransactionRefunded(reverseSwap, Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!, refundTransaction.getId()).message),
       refundTransaction.getId(),
     );
     // minerFee
@@ -2104,7 +2105,7 @@ class SwapNursery extends EventEmitter {
       await this.reverseSwapRepository.setTransactionRefunded(
         reverseSwap,
         calculateEthereumTransactionFee(contractTransaction),
-        Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
+        Errors.REFUNDED_COINS(reverseSwap.transactionId!, contractTransaction.hash).message,
       ),
       contractTransaction.hash,
     );
@@ -2136,7 +2137,7 @@ class SwapNursery extends EventEmitter {
         reverseSwap,
         // calculateEthereumTransactionFee(contractTransaction),
         0,
-        Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
+        Errors.REFUNDED_COINS(reverseSwap.transactionId!, contractTransaction.txid).message,
       ),
       contractTransaction.txid,
     );
@@ -2168,7 +2169,7 @@ class SwapNursery extends EventEmitter {
         reverseSwap,
         // calculateEthereumTransactionFee(contractTransaction),
         // 0,
-        Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!).message,
+        Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!, contractTransaction.txid).message,
       ),
       contractTransaction.txid,
     );
@@ -2203,7 +2204,7 @@ class SwapNursery extends EventEmitter {
           reverseSwap,
           // calculateEthereumTransactionFee(contractTransaction),
           0,
-          Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
+          Errors.REFUNDED_COINS(reverseSwap.transactionId!, contractTransaction.txid).message,
         ),
         contractTransaction.txid,
       );
@@ -2241,7 +2242,7 @@ class SwapNursery extends EventEmitter {
         reverseSwap,
         // calculateEthereumTransactionFee(contractTransaction),
         // 0,
-        Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!).message,
+        Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!, contractTransaction.txid).message,
       ),
       contractTransaction.txid,
     );
@@ -2267,7 +2268,7 @@ class SwapNursery extends EventEmitter {
       await this.reverseSwapRepository.setTransactionRefunded(
         reverseSwap,
         calculateEthereumTransactionFee(contractTransaction),
-        Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
+        Errors.REFUNDED_COINS(reverseSwap.transactionId!, contractTransaction.hash).message,
       ),
       contractTransaction.hash,
     );
@@ -2293,10 +2294,16 @@ class SwapNursery extends EventEmitter {
       await this.reverseSwapRepository.setTransactionRefunded(
         reverseSwap,
         calculateRskTransactionFee(contractTransaction),
-        Errors.REFUNDED_COINS(reverseSwap.transactionId!).message,
+        Errors.REFUNDED_COINS(reverseSwap.transactionId!, contractTransaction.hash).message,
       ),
       contractTransaction.hash,
     );
+  }
+
+  public manualExpireSwap = async (swap: Swap|ReverseSwap) => {
+    await this.lock.acquire(SwapNursery.swapLock, async () => {
+      await this.expireSwap(swap);
+    });
   }
 }
 

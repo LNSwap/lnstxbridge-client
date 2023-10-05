@@ -27,5 +27,18 @@ This is a light client to interface with [lnstxbridge](https://github.com/pseudo
 ## Docs
 Documentation available at [lnswap docs](https://docs.lnswap.org/quick-start).
 
+## Accounting
+if you need to generate yearly reports of your client activity,  
+* download and install [balanceofsatoshis](https://github.com/alexbosworth/balanceofsatoshis)  
+`npm install -g balanceofsatoshis`  
+* generate accounting reports from your LND node
+```
+bos accounting "chain-receives" --year 2022 -v --disable-fiat --csv > chain_receives_2022.csv
+bos accounting "chain-sends" --year 2022 -v --disable-fiat --csv > chain_sends_2022.csv
+bos accounting "invoices" --year 2022 -v --disable-fiat --csv > invoices_2022.csv
+bos accounting "payments" --year 2022 -v --disable-fiat --csv > payments_2022.csv
+```
+
+
 ## Acknowledgements
 This is a simplified fork of lnstxbridge which is a fork of [boltz](https://github.com/BoltzExchange)

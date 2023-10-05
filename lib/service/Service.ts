@@ -20,7 +20,7 @@ import { Network } from '../wallet/ethereum/EthereumManager';
 import RateProvider, { PairType } from '../rates/RateProvider';
 import { getGasPrice } from '../wallet/ethereum/EthereumUtils';
 // mintNFTforUser
-import { calculateStxOutTx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, sponsorTx } from '../wallet/stacks/StacksUtils';
+import { calculateStxOutTx, directCallStx, getAddressAllBalances, getFee, getStacksNetwork, getStacksRawTransaction, sponsorTx } from '../wallet/stacks/StacksUtils';
 import WalletManager, { Currency } from '../wallet/WalletManager';
 import SwapManager, { ChannelCreationInfo } from '../swap/SwapManager';
 // etherDecimals, ethereumPrepayMinerFeeGasLimit,
@@ -1421,7 +1421,7 @@ class Service {
       // convert from mstx to boltz default 10**8
       baseFee = Math.round(baseFee * 100);
     }
-    // console.log('service.1375 createreverseswap rate, feePercent, baseFee: ', rate, feePercent, baseFee);
+    console.log('service.1375 createreverseswap rate, feePercent, baseFee: ', rate, feePercent, baseFee);
 
     let onchainAmount: number;
     let holdInvoiceAmount: number;
@@ -1456,7 +1456,7 @@ class Service {
       holdInvoiceAmount = Math.ceil(holdInvoiceAmount);
 
       percentageFee = Math.ceil(holdInvoiceAmount * rate * feePercent);
-      // console.log('service.1410 createreverseswap onchainAmount, holdInvoiceAmount, percentageFee: ', onchainAmount, args.onchainAmount + baseFee, holdInvoiceAmount, percentageFee);
+      console.log('service.1410 createreverseswap onchainAmount, holdInvoiceAmount, percentageFee: ', onchainAmount, args.onchainAmount + baseFee, holdInvoiceAmount, percentageFee);
     } else {
       throw Errors.NO_AMOUNT_SPECIFIED();
     }
@@ -2277,6 +2277,41 @@ class Service {
       return 'N/A';
     }
 
+  }
+
+  public postAdminRefundStacks = async (id: string): Promise<{refundTxId: string}> => {
+    // refund swap
+    let swap = await this.swapManager.swapRepository.getSwap({
+      id: {
+        [Op.eq]: id,
+      },
+    });
+    if(!swap) {
+      swap = await this.swapManager.reverseSwapRepository.getReverseSwap({
+        id: {
+          [Op.eq]: id,
+        },
+      });
+    }
+    if(!swap) throw new Error('Stacks Swap not found');
+    console.log('service.2366 refunding swap ', swap.id, swap.preimageHash, swap.lockupAddress);
+    const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
+    // this.eventHandler.emitSwapExpired(swap);
+    return refundTxId;
+  }
+
+  public postAdminRefundBitcoin = async (id: string): Promise<{triggered: boolean}> => {
+    // refund swap
+    const swap = await this.swapManager.swapRepository.getSwap({
+      id: {
+        [Op.eq]: id,
+      },
+    });
+    if(!swap) throw new Error('Bitcoin Swap not found');
+    console.log('service.2303 refunding swap ', swap.id, swap.preimageHash, swap.asLockupAddress);
+    this.eventHandler.emitSwapExpired(swap);
+    // const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
+    return { triggered: true };
   }
 
 }

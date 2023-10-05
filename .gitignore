@@ -86,3 +86,4 @@ seed.dat
 .cookie
 admin.macaroon
 lnd-tls.cert
+**/*.csv

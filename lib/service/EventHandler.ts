@@ -50,6 +50,9 @@ interface EventHandler {
 
   on(event: 'balance.update', listener: (onchainBalance: number, localLNBalance: number, stxBalance: number) => void): this;
   emit(event: 'balance.update', onchainBalance: number, localLNBalance: number, stxBalance: number): boolean;
+
+  on(event: 'swap.expired', listener: (swap: Swap|ReverseSwap) => void): this;
+  emit(event: 'swap.expired', swap: Swap|ReverseSwap): boolean;
 }
 
 class EventHandler extends EventEmitter {
@@ -64,6 +67,10 @@ class EventHandler extends EventEmitter {
     this.subscribeSwapEvents();
     this.subscribeTransactions();
     this.subscribeChannelBackups();
+  }
+
+  public emitSwapExpired = (swap: Swap|ReverseSwap): void => {
+    this.nursery.manualExpireSwap(swap);
   }
 
   public emitSwapCreation = (id: string): void => {
