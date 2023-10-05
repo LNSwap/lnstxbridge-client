@@ -1016,7 +1016,15 @@ export const directCallStx = async (contract:string, functionName:string, amount
     const broadcastResponse = await broadcastTransaction(transaction, stacksNetwork);
     const txId = broadcastResponse.txid;
     console.log('stacksutil.690 directrefund txId: ', broadcastResponse, txId);
-    return txId;
+    if(broadcastResponse.error) {
+      console.log(`stacksutils.1020 directCallStx error: ${broadcastResponse.error}`);
+      return 'error: ' + broadcastResponse.error;
+    } else {
+      incrementNonce();
+      const txId = broadcastResponse.txid;
+      console.log('stacksutil.1025 directCallStx txId: ', txId);
+      return txId;
+    }
   } catch (err) {
     console.log('stacksutils.1012 calculateStacksTxFee err ', functionName, err.message);
     return false;
