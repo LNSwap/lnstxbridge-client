@@ -259,6 +259,21 @@ class Controller {
     }
   }
 
+  public getTransactionOut = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { currency, transactionId, index } = this.validateRequest(req.body, [
+        { name: 'currency', type: 'string' },
+        { name: 'transactionId', type: 'string' },
+        { name: 'index', type: 'number' },
+      ]);
+
+      const response = await this.service.getTransactionOut(currency, transactionId, index);
+      this.successResponse(res, { transaction: response });
+    } catch (error) {
+      this.errorResponse(req, res, error);
+    }
+  }
+
   public getSwapTransaction = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = this.validateRequest(req.body, [
@@ -775,10 +790,12 @@ class Controller {
       this.errorResponse(req, res, 'unauthorized');
       return;
     }
-    const { id } = this.validateRequest(req.body, [
+    const { id, type } = this.validateRequest(req.body, [
       { name: 'id', type: 'string' },
+      { name: 'type', type: 'string', optional: true },
     ]);
-    const data = await this.service.postAdminRefundStacks(id);
+    // this.logger.verbose(`postAdminRefundStacks ${id} ${type}`);
+    const data = await this.service.postAdminRefundStacks(id, type);
     this.successResponse(res, data);
   }
 

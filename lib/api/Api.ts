@@ -73,6 +73,7 @@ class Api {
     this.app.route('/swaprates').post(controller.swapRates);
 
     this.app.route('/gettransaction').post(controller.getTransaction);
+    this.app.route('/gettransactionout').post(controller.getTransactionOut);
     this.app.route('/getswaptransaction').post(controller.getSwapTransaction);
     this.app.route('/broadcasttransaction').post(controller.broadcastTransaction);
 
