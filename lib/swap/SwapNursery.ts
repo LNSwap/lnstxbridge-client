@@ -1628,18 +1628,20 @@ class SwapNursery extends EventEmitter {
 
   private claimStx = async (contractHandler: StacksContractHandler, swap: Swap, etherSwapValues?: EtherSwapValues, outgoingChannelId?: string, detectedPreimage?: string) => {
     this.logger.error('swapnursery.1040 claimStx triggered detectedPreimage? '+ detectedPreimage);
-    // add additional check to see if swap expired before paying the invoice
-    // happens when app is restarted on mocknet
-    const queriedSwap = await this.swapRepository.getSwap({
-      id: {
-        [Op.eq]: swap.id,
-      },
-    });
-    const latestBlockHeight = (await getInfo()).stacks_tip_height;
-    if (queriedSwap!.timeoutBlockHeight <= latestBlockHeight) {
-      console.log('can NOT claim, timeout passed!!!');
-      return;
-    }
+    
+    // // disable this for now
+    // // add additional check to see if swap expired before paying the invoice
+    // // happens when app is restarted on mocknet
+    // const queriedSwap = await this.swapRepository.getSwap({
+    //   id: {
+    //     [Op.eq]: swap.id,
+    //   },
+    // });
+    // const latestBlockHeight = (await getInfo()).stacks_tip_height;
+    // if (queriedSwap!.timeoutBlockHeight <= latestBlockHeight) {
+    //   console.log('can NOT claim, timeout passed!!!');
+    //   return;
+    // }
 
     const channelCreation = await this.channelCreationRepository.getChannelCreation({
       swapId: {
@@ -1674,6 +1676,7 @@ class SwapNursery extends EventEmitter {
       refundAddress,
       timelock,
     );
+    console.log('swapnursery.1679 contractTransaction ', contractTransaction);
 
     if(contractTransaction.error) {
       this.logger.error(`swapnursery.1165 claimStx error: ${contractTransaction.error}`);
@@ -1770,6 +1773,14 @@ class SwapNursery extends EventEmitter {
     const lightningCurrency = this.currencies.get(lightningSymbol)!;
 
     try {
+      // check if invoice already paid for some reason
+      const payment = await lightningCurrency.lndClient!.trackPayment(getHexBuffer(swap.preimageHash));
+      if (payment.paymentPreimage) {
+        this.logger.debug(`Invoice of Swap ${swap.id} is it paid already? ${payment.paymentPreimage}`);
+        await setInvoicePaid(payment.feeMsat);
+        return getHexBuffer(payment.paymentPreimage);
+      }
+      
       const raceTimeout = LndClient.paymentTimeout * 2;
       const payResponse = await Promise.race([
         lightningCurrency.lndClient!.sendPayment(swap.invoice!, outgoingChannelId),
@@ -1911,7 +1922,10 @@ class SwapNursery extends EventEmitter {
         console.log('swapn.1867 refund expired BTC swap ', swap.id);
         this.refundUtxoAS(swap, 'BTC');
       }
-
+    } else if (swap.lockupTransactionId) {
+      // added to cover manual refunds
+      console.log('swapn.1926 refund expired BTC swap ', swap.id);
+      this.refundUtxoAS(swap, 'BTC');
     }
 
     this.emit(
@@ -2043,7 +2057,7 @@ class SwapNursery extends EventEmitter {
     const wallet = this.walletManager.wallets.get(chainSymbol)!;
 
     this.logger.info('swapnursery.1976 refundUtxoAS getRawTransaction');
-    const rawLockupTransaction = await chainCurrency.chainClient!.getRawTransaction(reverseSwap.asLockupTransactionId!);
+    const rawLockupTransaction = await chainCurrency.chainClient!.getRawTransaction(reverseSwap.asLockupTransactionId! || reverseSwap.lockupTransactionId!);
 
     // // need blockhash because we're running a pruned node with no -txindex
     // let rawLockupTransaction;
@@ -2060,7 +2074,7 @@ class SwapNursery extends EventEmitter {
     const lockupOutput = lockupTransaction.outs[reverseSwap.lockupTransactionVout!];
 
     const destinationAddress = await wallet.getAddress();
-    console.log('swapn.1983 refundUtxoAS ', reverseSwap.asLockupTransactionId!, lockupOutput, reverseSwap.keyIndex!, )
+    console.log('swapn.1983 refundUtxoAS ', reverseSwap.asLockupTransactionId! || reverseSwap.lockupTransactionId!, lockupOutput, reverseSwap.keyIndex!, )
     const refundTransaction = constructRefundTransaction(
       [{
         ...lockupOutput,
@@ -2082,7 +2096,7 @@ class SwapNursery extends EventEmitter {
     this.logger.info(`Refunded ${chainSymbol} of Reverse Swap ${reverseSwap.id} in: ${refundTransaction.getId()}`);
     this.emit(
       'refund',
-      await this.swapRepository.setTransactionRefunded(reverseSwap, Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId!, refundTransaction.getId()).message),
+      await this.swapRepository.setTransactionRefunded(reverseSwap, Errors.REFUNDED_COINS(reverseSwap.asLockupTransactionId! || reverseSwap.lockupTransactionId!, refundTransaction.getId()).message),
       refundTransaction.getId(),
     );
     // minerFee

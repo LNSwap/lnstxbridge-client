@@ -251,7 +251,7 @@ class ContractHandler {
       // bufferCV(Buffer.from('01','hex')),
       // bufferCV(Buffer.from(tl3,'hex')),
     ];
-    // this.logger.verbose('stacks contracthandler.198 functionargs: ' + stringify(functionArgs));
+    // this.logger.verbose('stacks contracthandler.198 functionargs: ' + this.toObject(functionArgs));
 
     // const functionArgs = [
     //   bufferCV(preimageHash),
@@ -283,9 +283,11 @@ class ContractHandler {
     };
 
     // this.toObject(txOptions)
-    // console.log("stacks contracthandler.84 txOptions: " + this.toObject(txOptions));
+    // console.log("stacks contracthandler.84 txOptions: ",txOptions);
 
     const transaction = await makeContractCall(txOptions);
+    // console.log("ch.289 transaction: ", transaction);
+    // this.logger.verbose(`ch.289 transaction: ${this.toObject(transaction)}`);
     return broadcastTransaction(transaction, getStacksNetwork().stacksNetwork);
 
     
