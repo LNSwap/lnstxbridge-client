@@ -183,6 +183,10 @@ class ChainClient extends BaseClient {
     return this.client.request<RawTransaction>('getrawtransaction', [id, 1]);
   }
 
+  public getTransactionOut = (id: string, index: number): Promise<object> => {
+    return this.client.request<RawTransaction>('gettxout', [id, index]);
+  }
+
   public getRawTransactionVerboseBlockHash = (id: string, blockhash: string): Promise<RawTransaction> => {
     return this.client.request<RawTransaction>('getrawtransaction', [id, 1, blockhash]);
   }
