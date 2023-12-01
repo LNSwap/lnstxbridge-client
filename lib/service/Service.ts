@@ -454,6 +454,20 @@ class Service {
   }
 
   /**
+   * Gets a hex encoded transaction from a transaction hash on the specified network
+   */
+  public getTransactionOut = async (symbol: string, transactionHash: string, index: number): Promise<object> => {
+    const currency = this.getCurrency(symbol);
+
+    if (currency.chainClient === undefined) {
+      console.log('service.463 NOT_SUPPORTED_BY_SYMBOL');
+      throw Errors.NOT_SUPPORTED_BY_SYMBOL(symbol);
+    }
+
+    return await currency.chainClient.getTransactionOut(transactionHash, index);
+  }
+
+  /**
    * Gets the hex encoded lockup transaction of a Submarine Swap, the block height
    * at which it will timeout and the expected ETA for that block
    */
@@ -2282,7 +2296,7 @@ class Service {
 
   }
 
-  public postAdminRefundStacks = async (id: string): Promise<{refundTxId: string}> => {
+  public postAdminRefundStacks = async (id: string, type?: string): Promise<{refundTxId: string}> => {
     // refund swap
     let swap = await this.swapManager.swapRepository.getSwap({
       id: {
@@ -2297,10 +2311,19 @@ class Service {
       });
     }
     if(!swap) throw new Error('Stacks Swap not found');
-    console.log('service.2366 refunding swap ', swap.id, swap.preimageHash, swap.lockupAddress);
-    const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
-    // this.eventHandler.emitSwapExpired(swap);
-    return refundTxId;
+
+    if (type === 'claim') {
+      const { base, quote } = splitPairId(swap.pair);
+      const chainCurrency = this.currencies.get(getChainCurrency(base, quote, swap.orderSide, false))!;
+      this.logger.verbose(`service.2302 attemptSettleSwap ${stringify(chainCurrency)}, ${swap.id}`)
+      this.swapManager.nursery.attemptSettleSwap(chainCurrency, swap);
+      return {refundTxId: "done"};
+    } else {
+      console.log('service.2366 refunding swap ', swap.id, swap.preimageHash, swap.lockupAddress);
+      const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
+      // this.eventHandler.emitSwapExpired(swap);
+      return refundTxId;
+    }
   }
 
   public postAdminRefundBitcoin = async (id: string): Promise<{triggered: boolean}> => {
@@ -2312,6 +2335,8 @@ class Service {
     });
     if(!swap) throw new Error('Bitcoin Swap not found');
     console.log('service.2303 refunding swap ', swap.id, swap.preimageHash, swap.asLockupAddress);
+    // mark swap transaction.failed
+    await this.swapManager.swapRepository.setSwapStatus(swap, "transaction.failed");
     this.eventHandler.emitSwapExpired(swap);
     // const refundTxId = await directCallStx(swap.lockupAddress, 'refundStx', "0x123", "0x123", Buffer.from(swap.preimageHash, 'hex'));
     return { triggered: true };
