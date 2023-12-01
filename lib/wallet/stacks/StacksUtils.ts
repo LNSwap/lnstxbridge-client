@@ -280,7 +280,7 @@ export const getAccountNonce = async (initAddress?: string) => {
   const url = `${coreApiUrl}/extended/v1/address/${queryAddress}/nonces`;
   try {
     const response = await axios.get(url);
-    // console.log("stacksutils getAccountNonce", response.data);
+    console.log("stacksutils getAccountNonce", response.data);
     if (response.data.possible_next_nonce > nonce) {
       console.log('stacksutils.252 getAccountNonce updating nonce: ', response.data.possible_next_nonce);
       nonce = response.data.possible_next_nonce;

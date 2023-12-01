@@ -1062,10 +1062,13 @@ class Service {
       onchainAmount = requestedAmount*100; //go from mstx -> boltz (10^8)
 
       invoiceAmount = this.calculateInvoiceAmount(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
+      console.log('service.1051 inputs to calculateInvoiceAmountAS ', swap.orderSide, rate, onchainAmount, baseFee, percentageFee, );
       invoiceAmountAS = this.calculateInvoiceAmountAS(swap.orderSide, rate, onchainAmount, baseFee, percentageFee);
       console.log('service.872 onchainAmount=requestedAmount ', requestedAmount);
       console.log('service.873 invoiceAmount ', invoiceAmount);
+
       console.log('service.874 invoiceAmountAS ', invoiceAmountAS);
+      console.log('service.1056 requestedAmount*rate ', requestedAmount, rate, (requestedAmount*rate), );
 
       this.verifyAmount(swap.pair, rate, invoiceAmount, swap.orderSide, false);
 
@@ -1131,8 +1134,8 @@ class Service {
     // userSide = invoiceAmount calculated in backend - lnswap is receiving this
 
     // Accept spread due to fees
-    if (operatorSide*1.01 > userSide ) {
-      console.log('s.940 caught rate issue', operatorSide*1.01, userSide);
+    if (operatorSide*1.0095 > userSide ) {
+      console.log('s.940 caught rate issue', operatorSide, operatorSide*1.0095, userSide);
       //
       // || amountOne < amountTwo*0.97
       // throw Errors.WRONG_RATE();
