@@ -1867,7 +1867,7 @@ class SwapNursery extends EventEmitter {
     // lndClient?: LndClient,
     // await lndClient.cancelInvoice(getHexBuffer(reverseSwap.preimageHash));
     console.log('sn.1697 handleswap failed ', error);
-    this.logger.warn(`Failed to lockup ${reverseSwap.onchainAmount} ${chainSymbol} for Reverse Swap ${reverseSwap.id}: ${formatError(error)}`);
+    this.logger.warn(`sn.178 ${reverseSwap.onchainAmount} ${chainSymbol} for Reverse Swap ${reverseSwap.id}: ${formatError(error)}`);
     this.emit('coins.failedToSend', await this.swapRepository.setSwapStatus(
       reverseSwap,
       SwapUpdateEvent.TransactionFailed,

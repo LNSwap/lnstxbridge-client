@@ -130,7 +130,7 @@ class ContractHandler {
     //   bufferCV(Buffer.from('000000000000000000000000000012b3','hex')),
     // ];
 
-    this.logger.verbose('broadcasting with nonce: ' + getStacksNetwork().nonce);
+    this.logger.verbose('ch.133 broadcasting with nonce: ' + getStacksNetwork().nonce);
     const stacksNetworkData = getStacksNetwork();
     const txOptions = {
       contractAddress: this.contractAddress,
@@ -152,9 +152,11 @@ class ContractHandler {
       // }
     };
 
-    // this.logger.error("stacks contracthandler.84 txOptions: "+ stringify(txOptions));
+    // Do not know how to serialize a BigInt
+    // this.logger.error("stacksch.155 txOptions: "+ stringify(txOptions));
 
     const transaction = await makeContractCall(txOptions);
+    console.log('ch.158 transaction: ', transaction);
     return broadcastTransaction(transaction, getStacksNetwork().stacksNetwork);
 
     // return this.etherSwap.lock(preimageHash, claimAddress, timeLock, {
@@ -505,7 +507,7 @@ class ContractHandler {
       // }
     };
 
-    // this.logger.error("stacks contracthandler.84 txOptions: "+ stringify(txOptions));
+    // this.logger.info("stacksch.84 txOptions: "+ stringify(txOptions));
 
     const transaction = await makeContractCall(txOptions);
     return broadcastTransaction(transaction, getStacksNetwork().stacksNetwork);
